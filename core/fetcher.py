@@ -2,23 +2,21 @@
 
 import requests
 from datetime import datetime, timedelta
-import feedparser  # New import for RSS parsing
-from requests.adapters import HTTPAdapter  # For retries
-from urllib3.util.retry import Retry  # For retries
+import feedparser  
+from requests.adapters import HTTPAdapter  
+from urllib3.util.retry import Retry  
 import re
-import io  # For image thumbnail processing
-from PIL import Image  # For image thumbnail processing
-import base64  # For image thumbnail encoding
-from urllib.parse import urljoin, urlparse  # For URL handling
+import io 
+from PIL import Image  
+import base64  
+from urllib.parse import urljoin, urlparse  
 
 from typing import List, Dict
 import logging
 
-# Import from your config and utils
-from config.settings import CATEGORY_KEYWORDS, RSS_FEEDS  # Now importing RSS_FEEDS
-from .utils import clean_text, get_hash_key, analyze_sentiment  # Ensure these are correctly imported
+from config.settings import CATEGORY_KEYWORDS, RSS_FEEDS 
+from .utils import clean_text, get_hash_key, analyze_sentiment 
 
-# Configure logging for this module
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
@@ -81,8 +79,8 @@ def get_image_thumbnail(image_url, size=(150, 100)):
         if not image_url:
             return None
         response = requests.get(image_url, timeout=10, stream=True)
-        response.raise_for_status()  # Raise an HTTPError for bad responses (4xx or 5xx)
-
+        response.raise_for_status() 
+        
         img = Image.open(io.BytesIO(response.content))
         img.thumbnail(size, Image.Resampling.LANCZOS)
         buffer = io.BytesIO()
@@ -97,7 +95,7 @@ def get_image_thumbnail(image_url, size=(150, 100)):
         return None
 
 
-# --- Main News Fetching Function (now using RSS) ---
+# --- Main News Fetching Function  ---
 
 def fetch_top_headlines(category: str = "general", country: str = "in", page_size: int = 20,
                         selected_scope: str = "India News") -> List[Dict]:
@@ -118,7 +116,7 @@ def fetch_top_headlines(category: str = "general", country: str = "in", page_siz
         try:
             logging.info(f"Fetching from RSS feed: {url}")
             response = session.get(url, timeout=15)
-            response.raise_for_status()  # Raise an HTTPError for bad responses (4xx or 5xx)
+            response.raise_for_status()  
             parsed = feedparser.parse(response.content)
 
             # Extract base URL for relative image paths
@@ -126,7 +124,7 @@ def fetch_top_headlines(category: str = "general", country: str = "in", page_siz
             base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
 
             for entry in parsed.entries:
-                if len(news) >= page_size:  # Stop if we have enough articles
+                if len(news) >= page_size: 
                     break
 
                 title = clean_text(getattr(entry, 'title', '')).strip()
@@ -143,7 +141,7 @@ def fetch_top_headlines(category: str = "general", country: str = "in", page_siz
 
                 # Normalize URL for consistent hashing, especially for links
                 if temp_identifier_for_dedup:
-                    temp_identifier_for_dedup = get_hash_key(temp_identifier_for_dedup)  # Use get_hash_key from utils
+                    temp_identifier_for_dedup = get_hash_key(temp_identifier_for_dedup)  
 
                 if not temp_identifier_for_dedup or temp_identifier_for_dedup in seen_ids:
                     continue
@@ -155,7 +153,7 @@ def fetch_top_headlines(category: str = "general", country: str = "in", page_siz
                 if published_at_str:
                     try:
                         pub_datetime = datetime(*published_at_str[:6])
-                        # Filter out old articles (e.g., older than 7 days)
+                        
                         if datetime.now() - pub_datetime > timedelta(days=7):
                             continue
                         published_date = pub_datetime.strftime("%Y-%m-%d %H:%M")
@@ -165,7 +163,7 @@ def fetch_top_headlines(category: str = "general", country: str = "in", page_siz
                 full_text_for_ai = f"{title}. {summary}" if summary else title
 
                 article_data = {
-                    'id': temp_identifier_for_dedup,  # Use the consistent ID
+                    'id': temp_identifier_for_dedup,  
                     'title': title,
                     'summary': summary,
                     'content': clean_text(getattr(entry, 'content', [{'value': ''}])[0].get('value', '')) if hasattr(
@@ -174,7 +172,7 @@ def fetch_top_headlines(category: str = "general", country: str = "in", page_siz
                     'published': published_date,
                     'source': getattr(entry, 'source', {}).get('title', urlparse(url).netloc.replace('www.', '')),
                     'image_url': extract_image_from_rss(entry, base_url),
-                    'sentiment_data': analyze_sentiment(full_text_for_ai),  # Use sentiment_data for consistency
+                    'sentiment_data': analyze_sentiment(full_text_for_ai),  
                     'full_text_for_ai': full_text_for_ai
                 }
                 news.append(article_data)
@@ -194,17 +192,17 @@ def assign_categories_to_articles(articles: List[Dict], category_keywords: Dict[
     Modified to accept category_keywords as an argument.
     """
     for article in articles:
-        # Category assignment
+        
         article['category'] = "Uncategorized"
         text_content = (article.get('title', '') + " " + article.get('summary', '')).lower()
 
-        for category, keywords in category_keywords.items(): # Use passed category_keywords
+        for category, keywords in category_keywords.items(): 
             if any(keyword.lower() in text_content for keyword in keywords):
                 article['category'] = category
                 break
 
-        # Sentiment analysis (already done in fetch_top_headlines, but keep for robustness)
-        if 'sentiment_data' not in article:  # Ensure sentiment_data key is present
+        # Sentiment analysis
+        if 'sentiment_data' not in article:  
             text_for_sentiment = article.get('summary', '') or article.get('title', '')
             article['sentiment_data'] = analyze_sentiment(text_for_sentiment)
 
@@ -219,11 +217,11 @@ def categorize_news(news: List[Dict], category: str, category_keywords: Dict[str
     if category == "All":
         return news
 
-    if category not in category_keywords: # Use passed category_keywords
+    if category not in category_keywords: 
         logging.warning(f"Category '{category}' not found in CATEGORY_KEYWORDS. Returning all news.")
         return news
 
-    keywords = category_keywords[category] # Use passed category_keywords
+    keywords = category_keywords[category] 
     categorized = []
     for article in news:
         text_content = (article.get('title', '') + " " + article.get('summary', '')).lower()
