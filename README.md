@@ -12,6 +12,12 @@ In India, particularly in Tier 2 and Tier 3 regions, access to timely and releva
 
 ---
 
+## Demo
+
+> https://youtu.be/wvOa9x7HVoI
+
+---
+
 ## ✨ Features Designed for Impact
 
 - ### **📰 AI-Powered News Fetching**
@@ -196,7 +202,4 @@ The app will be available at:
 ```
 http://localhost:5000
 ```
----
-## Demo
-> https://youtu.be/wvOa9x7HVoI
 ---
