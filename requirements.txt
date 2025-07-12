@@ -1,0 +1,16 @@
+Flask
+Jinja2
+Pillow
+deep-translator
+feedparser
+gTTS
+google-auth-oauthlib
+newsapi-python
+nltk
+python-dotenv
+requests
+sentencepiece
+textblob
+torch
+transformers
+urllib3

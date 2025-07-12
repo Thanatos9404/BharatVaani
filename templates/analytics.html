@@ -1,0 +1,50 @@
+{% extends "index.html" %}
+{% block content %}
+<section class="content-section active" id="analytics">
+
+  <div class="card">
+    <h2 class="card-title">📊 News Analytics</h2>
+    <p class="card-subtitle">Overview of your reading activity, AI sentiment analysis, and categorized coverage.</p>
+  </div>
+
+  <div class="analytics-grid">
+    <!-- Stats -->
+    <div class="stat-block">
+      <h3>Total Articles</h3>
+      <p class="stat-value">{{ total_articles }}</p>
+    </div>
+
+    <div class="stat-block">
+      <h3>Bookmarked</h3>
+      <p class="stat-value">{{ bookmark_count }}</p>
+    </div>
+
+    <div class="stat-block">
+      <h3>Read</h3>
+      <p class="stat-value">{{ read_articles_count }}</p>
+    </div>
+  </div>
+
+  <!-- Sentiment Distribution -->
+  <div class="chart-section">
+    <h3>🧠 Sentiment Analysis</h3>
+    <canvas id="sentimentChart" height="180"></canvas>
+  </div>
+
+  <!-- Category Distribution -->
+  <div class="chart-section">
+    <h3>📰 Articles by Category</h3>
+    <canvas id="categoryChart" height="180"></canvas>
+  </div>
+
+  <!-- Top Entities -->
+  <div class="card">
+    <h3 class="card-title">🏷️ Top Entities Mentioned</h3>
+    <ul class="entity-list">
+      {% for entity, count in top_entities %}
+        <li>{{ entity }} <span class="entity-count">({{ count }})</span></li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+{% endblock %}

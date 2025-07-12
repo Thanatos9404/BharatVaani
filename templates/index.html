@@ -1,0 +1,1797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BharatVaani - Your AI-Powered News Companion for India</title>
+    <meta name="description" content="Get AI-powered news summaries, multi-language translations, and audio summaries from trusted Indian news sources">
+    <meta name="keywords" content="India news, AI summaries, Hindi news, Indian languages, news translation, text to speech">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📰</text></svg>">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN for Analytics Charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="BharatVaani - AI-Powered News for India">
+    <meta property="og:description" content="Smart news consumption with AI summaries in Indian languages">
+    <meta property="og:type" content="website">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "NewsMediaOrganization",
+      "name": "BharatVaani",
+      "@id": "https://bharatvaani.com",
+      "url": "https://bharatvaani.com",
+      "logo": "https://bharatvaani.com/static/assets/bharatvaani-logo.png",
+      "sameAs": [
+        "https://twitter.com/bharatvaani",
+        "https://facebook.com/bharatvaani"
+      ]
+    }
+    </script>
+
+    <style>
+        /* Custom styles to integrate with Tailwind and existing design system */
+        :root {
+            /* Colors - Inspired by the provided UI image */
+            --bg-dark: #1A1A2E; /* Deep, dark background */
+            --card-bg-dark: rgba(255, 255, 255, 0.05); /* Frosted glass card background */
+            --card-border-dark: rgba(255, 255, 255, 0.1); /* Frosted glass card border */
+            --text-light: #E0E0FF; /* Light text for dark background */
+            --text-muted: #A0A0C0; /* Muted text for secondary info */
+            --input-bg-dark: rgba(255, 255, 255, 0.08); /* Input field background */
+            --input-border-dark: rgba(255, 255, 255, 0.15); /* Input field border */
+
+            /* Accent Gradients */
+            --gradient-orange-teal: linear-gradient(to right, #FF7B54, #1ABC9C);
+            --gradient-purple-blue: linear-gradient(to right, #8E44AD, #3498DB);
+            --gradient-green-cyan: linear-gradient(to right, #2ECC71, #00BCD4);
+
+            /* Spacing */
+            --space-xs: 0.25rem; /* 4px */
+            --space-sm: 0.5rem;  /* 8px */
+            --space-md: 1rem;    /* 16px */
+            --space-lg: 1.5rem;  /* 24px */
+            --space-xl: 2rem;    /* 32px */
+            --space-2xl: 3rem;   /* 48px */
+            --space-3xl: 4rem;   /* 64px */
+
+            /* Typography */
+            --font-size-xs: 0.75rem; /* 12px */
+            --font-size-sm: 0.875rem; /* 14px */
+            --font-size-md: 1rem;    /* 16px */
+            --font-size-lg: 1.125rem; /* 18px */
+            --font-size-xl: 1.25rem; /* 20px */
+            --font-size-2xl: 1.5rem; /* 24px */
+            --font-size-3xl: 1.875rem; /* 30px */
+            --font-size-4xl: 2.25rem; /* 36px */
+
+            /* Border Radius */
+            --radius-sm: 0.25rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.5rem;
+            --radius-full: 9999px;
+
+            /* Shadows */
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.15);
+            --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.2);
+            --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.25);
+
+            /* Specific colors from the image for consistency */
+            --orange-500: #F97316;
+            --green-400: #4ADE80;
+            --pink-500: #EC4899;
+            --blue-400: #60A5FA;
+            --purple-500: #A855F7;
+            --cyan-400: #22D3EE;
+            --red-400: #F87171;
+            --indigo-900: #3730A3;
+            --purple-900: #581C87;
+            --blue-900: #1E3A8A;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+            --gray-950: #030712;
+            --yellow-400: #FACC15; /* Added for AI Summary button */
+            --teal-400: #2DD4BF; /* Added for Simplify button */
+
+            /* Colors for alerts/messages */
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --info-color: #17a2b8;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-light);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+            /* Enhanced background gradient - multi-color radial */
+            background: radial-gradient(at top left, rgba(255, 165, 0, 0.1) 0%, transparent 30%),
+                        radial-gradient(at top right, rgba(0, 191, 255, 0.1) 0%, transparent 30%),
+                        radial-gradient(at bottom left, rgba(128, 0, 128, 0.1) 0%, transparent 30%),
+                        radial-gradient(at bottom right, rgba(255, 0, 255, 0.1) 0%, transparent 30%),
+                        linear-gradient(to bottom right, #1A1A2E, #000000); /* Base dark gradient */
+            background-blend-mode: screen, overlay, multiply, hard-light, normal; /* Blend modes for more depth */
+            background-color: #1A1A2E; /* Fallback for older browsers */
+        }
+
+        /* Utility classes for backgrounds and borders based on variables */
+        .bg-card-dark {
+            background-color: var(--card-bg-dark);
+        }
+        .border-card-dark {
+            border-color: var(--card-border-dark);
+        }
+        .text-muted {
+            color: var(--text-muted);
+        }
+        .bg-input-dark {
+            background-color: var(--input-bg-dark);
+        }
+        .border-input-dark {
+            border-color: var(--input-border-dark);
+        }
+
+        /* Custom spinner for refresh button */
+        .animate-spin-slow {
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Custom toast notification styles */
+        #custom-toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .custom-toast {
+            background-color: rgba(30, 41, 59, 0.9); /* Dark blue-gray */
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            transform: translateY(-20px);
+            animation: fadeInSlideDown 0.3s forwards;
+        }
+        .custom-toast.hide {
+            animation: fadeOutSlideUp 0.3s forwards;
+        }
+        @keyframes fadeInSlideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeOutSlideUp {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-20px); }
+        }
+
+        /* Ensure content sections are initially hidden except for active */
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+
+        /* --- Analytics Specific Styles (from analytics.html) --- */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--space-md);
+            margin-bottom: var(--space-2xl);
+        }
+
+        .stat-block {
+            background-color: var(--card-bg-dark);
+            border: 1px solid var(--card-border-dark);
+            border-radius: var(--radius-xl);
+            padding: var(--space-lg);
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .stat-block:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-block h3 {
+            font-size: var(--font-size-md);
+            color: var(--text-muted);
+            margin-bottom: var(--space-xs);
+        }
+
+        .stat-block .stat-value {
+            font-size: var(--font-size-3xl);
+            font-weight: 700;
+            color: var(--text-light);
+        }
+
+        .chart-section {
+            background-color: var(--card-bg-dark);
+            border: 1px solid var(--card-border-dark);
+            border-radius: var(--radius-xl);
+            padding: var(--space-lg);
+            margin-bottom: var(--space-2xl);
+            box-shadow: var(--shadow-md);
+            /* Added for scrollability on analytics page */
+            max-height: 600px; /* Adjust as needed */
+            overflow-y: auto;
+        }
+
+        .chart-section h3 {
+            font-size: var(--font-size-xl);
+            color: var(--text-light);
+            margin-bottom: var(--space-lg);
+            text-align: center;
+        }
+
+        .entity-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .entity-list li {
+            background-color: var(--input-bg-dark);
+            border: 1px solid var(--input-border-dark);
+            border-radius: var(--radius-md);
+            padding: var(--space-sm) var(--space-md);
+            margin-bottom: var(--space-xs);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: var(--font-size-md);
+            color: var(--text-light);
+        }
+
+        .entity-count {
+            color: var(--text-muted);
+            font-size: var(--font-size-sm);
+        }
+
+        /* --- What-If Specific Styles (from what_if.html) --- */
+        .what-if-container .card {
+            background-color: var(--card-bg-dark);
+            border: 1px solid var(--card-border-dark);
+            border-radius: var(--radius-xl);
+            padding: var(--space-2xl);
+            box-shadow: var(--shadow-lg);
+            margin-bottom: var(--space-2xl);
+        }
+
+        .form-group {
+            margin-bottom: var(--space-lg);
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: var(--space-sm);
+            font-size: var(--font-size-md);
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: var(--space-md);
+            background-color: var(--input-bg-dark);
+            border: 1px solid var(--input-border-dark);
+            border-radius: var(--radius-md);
+            color: var(--text-light);
+            font-size: var(--font-size-md);
+            min-height: 120px;
+            resize: vertical;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--info-color);
+            box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.25); /* info-color with transparency */
+        }
+
+        .char-count-display {
+            font-size: var(--font-size-xs);
+            color: var(--text-muted);
+            text-align: right;
+            margin-top: var(--space-xs);
+        }
+
+        .trait-selector h3 {
+            font-size: var(--font-size-lg);
+            color: var(--text-light);
+            margin-bottom: var(--space-md);
+        }
+
+        .trait-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-xl);
+        }
+
+        .trait-pill {
+            background-color: var(--input-bg-dark);
+            color: var(--text-muted);
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-full);
+            border: 1px solid var(--input-border-dark);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: var(--font-size-sm);
+        }
+
+        .trait-pill:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: var(--text-light);
+        }
+
+        .trait-pill.active {
+            background: var(--gradient-purple-blue); /* Example gradient */
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 10px rgba(142, 68, 173, 0.3);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: var(--space-md);
+            justify-content: center;
+            margin-top: var(--space-xl);
+        }
+
+        .btn {
+            padding: var(--space-md) var(--space-lg);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-xs);
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--gradient-orange-teal); /* Example gradient */
+            color: white;
+            border: none;
+            box-shadow: 0 4px 10px rgba(255, 123, 84, 0.3);
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(255, 123, 84, 0.4);
+        }
+
+        .btn-secondary {
+            background-color: var(--input-bg-dark);
+            color: var(--text-light);
+            border: 1px solid var(--input-border-dark);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--info-color);
+            border: 1px solid var(--info-color);
+        }
+
+        .btn-outline:hover {
+            background-color: rgba(23, 162, 184, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .scenario-result {
+            background-color: var(--card-bg-dark);
+            border: 1px solid var(--card-border-dark);
+            border-radius: var(--radius-xl);
+            padding: var(--space-2xl);
+            box-shadow: var(--shadow-lg);
+            margin-top: var(--space-2xl);
+            word-wrap: break-word; /* Ensure long words break */
+        }
+
+        .scenario-result h3 {
+            font-size: var(--font-size-xl);
+            color: var(--text-light);
+            margin-bottom: var(--space-lg);
+        }
+
+        .scenario-result p {
+            font-size: var(--font-size-md);
+            color: var(--text-light);
+            margin-bottom: var(--space-md);
+        }
+
+        .scenario-result p strong {
+            color: var(--info-color);
+        }
+
+        .scenario-buttons {
+            display: flex;
+            gap: var(--space-md);
+            margin-top: var(--space-xl);
+        }
+
+        /* Flash message alerts */
+        .alert {
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-size: var(--font-size-md);
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background-color: rgba(40, 167, 69, 0.2); /* success-color with transparency */
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .alert-error {
+            background-color: rgba(220, 53, 69, 0.2); /* error-color with transparency */
+            color: var(--error-color);
+            border: 1px solid var(--error-color);
+        }
+
+        .alert-info {
+            background-color: rgba(23, 162, 184, 0.2); /* info-color with transparency */
+            color: var(--info-color);
+            border: 1px solid var(--info-color);
+        }
+
+        /* Specific styles for news cards to fix congestion */
+        .news-card-content {
+            /* Removed fixed height */
+            min-height: 120px; /* Ensure a minimum height */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Pushes title to top, meta to bottom */
+            padding: var(--space-md); /* Add padding */
+        }
+
+        .news-card-title {
+            font-size: var(--font-size-lg);
+            font-weight: bold;
+            margin-bottom: var(--space-sm);
+            /* Optional: Add line clamping for long titles */
+            display: -webkit-box;
+            -webkit-line-clamp: 3; /* Limit to 3 lines */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .news-card-meta {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            font-size: var(--font-size-sm);
+            color: var(--text-muted);
+            margin-top: var(--space-sm); /* Ensure space below title */
+        }
+
+        .news-card-actions {
+            display: flex;
+            justify-content: flex-end; /* Align items to the right */
+            align-items: center; /* Vertically align items */
+            gap: var(--space-sm);
+            flex-wrap: wrap; /* Allow buttons to wrap on small screens */
+            padding: var(--space-md); /* Add padding to actions */
+            border-top: 1px solid rgba(255, 255, 255, 0.05); /* Separator */
+            position: relative; /* For absolute positioning of bookmark button if needed, but not for this approach */
+        }
+
+        .news-card-actions button {
+            /* flex-grow: 1; /* Removed to prevent buttons from stretching */
+            min-width: 80px; /* Minimum width for buttons */
+        }
+
+        /* Filter bar styles */
+        .filter-bar {
+            background-color: var(--card-bg-dark);
+            border: 1px solid var(--card-border-dark);
+            border-radius: var(--radius-xl);
+            padding: var(--space-lg);
+            margin-bottom: var(--space-2xl);
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-md);
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xs);
+        }
+
+        .filter-label {
+            font-size: var(--font-size-sm);
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .filter-select, .filter-input {
+            background-color: var(--input-bg-dark);
+            border: 1px solid var(--input-border-dark);
+            border-radius: var(--radius-md);
+            padding: var(--space-sm) var(--space-md);
+            color: var(--text-light);
+            font-size: var(--font-size-md);
+            appearance: none; /* Remove default arrow */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            cursor: pointer;
+            min-width: 120px;
+        }
+
+        .filter-select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23A0A0C0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            padding-right: 30px; /* Make space for the arrow */
+        }
+
+        .filter-button {
+            background: var(--gradient-green-cyan);
+            color: white;
+            border: none;
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+
+        .filter-button:hover {
+            opacity: 0.9;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            .header-search {
+                order: 3; /* Move search below logo and user on small screens */
+                flex-basis: 100%; /* Take full width */
+                margin-top: 1rem;
+            }
+            .header-logo {
+                flex-grow: 1;
+            }
+            .header-user {
+                margin-left: auto;
+            }
+            .tabs-container {
+                justify-content: flex-start;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr; /* Single column on small screens */
+            }
+            .news-grid {
+                grid-template-columns: 1fr; /* Single column for news on small screens */
+            }
+            .what-if-container .card {
+                padding: var(--space-xl);
+            }
+            .form-actions {
+                flex-direction: column;
+            }
+            .btn {
+                width: 100%;
+            }
+            .filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .filter-select, .filter-input, .filter-button {
+                width: 100%;
+                min-width: unset;
+            }
+        }
+
+        /* Spinner for buttons */
+        .button-spinner {
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            border: 2px solid currentColor;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+            margin-right: 0.5em;
+        }
+
+        /* Styles for the bookmark button at bottom-right */
+        .news-card .bookmark-button-bottom {
+            /* Removed absolute positioning */
+            /* Now part of flex container, pushed to right */
+            margin-left: auto; /* Pushes button to the right end of the flex container */
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border-radius: var(--radius-full);
+            padding: 0.5rem;
+            color: var(--pink-500);
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .news-card .bookmark-button-bottom:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        /* User profile dropdown z-index fix */
+        .header-user {
+            position: relative; /* Ensure dropdown positions relative to this */
+            z-index: 30; /* Higher z-index than tabs-container (which is 10) */
+        }
+        .header-user .group-hover\:opacity-100 {
+            z-index: 35; /* Even higher z-index for the dropdown itself */
+        }
+    </style>
+</head>
+<body class="min-h-screen text-white font-sans">
+    <div class="container mx-auto px-4 py-6 max-w-5xl">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-orange-600/10 to-blue-600/10 backdrop-blur-md rounded-2xl p-3 mb-6 border border-white/5 shadow-lg flex flex-wrap items-center justify-between">
+            <div class="flex items-center gap-3 header-logo">
+                <div class="bg-gradient-to-br from-orange-500 to-blue-500 p-2 rounded-lg">
+                    <div class="w-8 h-8 flex items-center justify-center bg-white/10 backdrop-blur-sm rounded-md">
+                        <span class="text-white text-xl">📰</span>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold">BharatVaani</h1>
+                    <p class="text-xs text-white/60">Modern News Platform</p>
+                </div>
+            </div>
+
+            <div class="flex-1 mx-6 header-search">
+                <div class="relative max-w-md mx-auto">
+                    <!-- Search Icon (Lucide-react Search) -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-2.5 h-4 w-4 text-white/60"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    <input
+                        type="text"
+                        placeholder="Search news..."
+                        class="w-full bg-white/5 border border-white/10 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                        id="search-input"
+                    />
+                    <!-- Mic Icon (Lucide-react Mic) -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute right-3 top-2.5 h-4 w-4 text-white/60"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/><path d="M8 23h8"/></svg>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-purple-600/20 to-purple-600/10 p-2 rounded-lg cursor-pointer header-user group relative">
+                {% if session.user and session.user.picture %}
+                    <img src="{{ session.user.picture }}" alt="User Profile" class="w-8 h-8 rounded-full object-cover">
+                {% else %}
+                    <!-- User Icon (Lucide-react User) -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-purple-400"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                {% endif %}
+                <div class="absolute right-0 mt-2 w-48 bg-card-dark border border-card-border-dark rounded-md shadow-lg py-1 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-in-out transform scale-95 group-hover:scale-100 origin-top-right">
+                    <p class="px-4 py-2 text-sm text-text-light">{{ session.user.name if session.user else 'Guest' }}</p>
+                    <a href="{{ url_for('logout') }}" class="block px-4 py-2 text-sm text-red-400 hover:bg-white/10">Logout</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="flex overflow-x-auto mb-6 bg-white/5 backdrop-blur-md rounded-full p-1 border border-white/5 tabs-container">
+            <!-- Tabs will be dynamically generated/managed by JS -->
+            <button data-tab="News Feed" class="tab-button px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all">News Feed</button>
+            <button data-tab="Reading List" class="tab-button px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all">Reading List</button>
+            <button data-tab="Analytics" class="tab-button px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all">Analytics</button>
+            <button data-tab="What-If" class="tab-button px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all">What-If</button>
+            <button data-tab="Scenarios" class="tab-button px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all">Scenarios</button>
+            <button data-tab="Settings" class="tab-button px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all">Settings</button>
+        </div>
+
+        <!-- Flash Messages (from main.py) -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages-container mb-6">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'error' if category == 'error' else 'success' if category == 'success' else 'info' }}" role="alert">
+                            {% if category == 'error' %}⚠️{% elif category == 'success' %}✅{% else %}ℹ️{% endif %}
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- News Feed Content Section -->
+        <section id="News Feed" class="content-section">
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 stats-grid">
+                <!-- Stat 1: Total Articles -->
+                <div class="bg-gradient-to-br from-orange-600/20 to-orange-500/10 backdrop-blur-md rounded-2xl p-4 border border-white/5 shadow-lg">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-radial from-orange-500/30 to-orange-500/5">
+                            <!-- FileText Icon (Lucide-react FileText) -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-orange-500"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        </div>
+                        <div class="font-bold text-2xl">{{ total_articles }}</div>
+                    </div>
+                    <div class="text-white/60 text-sm mt-1">Total Articles</div>
+                </div>
+
+                <!-- Stat 2: Bookmarked -->
+                <div class="bg-gradient-to-br from-green-500/20 to-green-500/10 backdrop-blur-md rounded-2xl p-4 border border-white/5 shadow-lg">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-radial from-green-400/30 to-green-400/5">
+                            <!-- Heart Icon (Lucide-react Heart) -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-400"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                        </div>
+                        <div class="font-bold text-2xl">{{ bookmark_count }}</div>
+                    </div>
+                    <div class="text-white/60 text-sm mt-1">Bookmarked</div>
+                </div>
+
+                <!-- Stat 3: Read Articles -->
+                <div class="bg-gradient-to-br from-pink-600/20 to-pink-500/10 backdrop-blur-md rounded-2xl p-4 border border-white/5 shadow-lg">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-radial from-pink-500/30 to-pink-500/5">
+                            <!-- Eye Icon (Lucide-react Eye) -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-pink-500"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </div>
+                        <div class="font-bold text-2xl">{{ read_articles_count }}</div>
+                    </div>
+                    <div class="text-white/60 text-sm mt-1">Read Articles</div>
+                </div>
+
+                <!-- Stat 4: Categories -->
+                <div class="bg-gradient-to-br from-blue-500/20 to-blue-500/10 backdrop-blur-md rounded-2xl p-4 border border-white/5 shadow-lg">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-radial from-blue-400/30 to-blue-400/5">
+                            <!-- Grid Icon (Lucide-react Grid) -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>
+                        </div>
+                        <div class="font-bold text-2xl">{{ categories_count|length }}</div>
+                    </div>
+                    <div class="text-white/60 text-sm mt-1">Categories</div>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <form id="filterForm" class="filter-bar">
+                <div class="filter-group">
+                    <label for="category-select" class="filter-label">Category:</label>
+                    <select id="category-select" name="category" class="filter-select">
+                        <option value="All" {% if selected_category == 'All' %}selected{% endif %}>All</option>
+                        {% for category in news_categories %}
+                            <option value="{{ category }}" {% if selected_category == category %}selected{% endif %}>{{ category }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="language-select" class="filter-label">Language:</label>
+                    <select id="language-select" name="language" class="filter-select">
+                        {% for lang_code, lang_name in indian_languages.items() %}
+                            <option value="{{ lang_code }}" {% if selected_language == lang_code %}selected{% endif %}>{{ lang_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="limit-input" class="filter-label">Articles:</label>
+                    <input type="number" id="limit-input" name="limit" class="filter-input" value="{{ article_limit }}" min="5" max="50">
+                </div>
+
+                <div class="filter-group">
+                    <label for="scope-select" class="filter-label">Scope:</label>
+                    <select id="scope-select" name="scope" class="filter-select">
+                        {% for scope_name, urls in RSS_FEEDS.items() %}
+                            <option value="{{ scope_name }}" {% if selected_scope == scope_name %}selected{% endif %}>{{ scope_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="sort-select" class="filter-label">Sort By:</label>
+                    <select id="sort-select" name="sort_by" class="filter-select">
+                        <option value="date_desc" {% if sort_by == 'date_desc' %}selected{% endif %}>Date (Newest)</option>
+                        <option value="date_asc" {% if sort_by == 'date_asc' %}selected{% endif %}>Date (Oldest)</option>
+                        <option value="sentiment_pos" {% if sort_by == 'sentiment_pos' %}selected{% endif %}>Sentiment (Positive)</option>
+                        <option value="sentiment_neg" {% if sort_by == 'sentiment_neg' %}selected{% endif %}>Sentiment (Negative)</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="filter-button">Apply Filters</button>
+            </form>
+
+            <!-- Latest News -->
+            <div class="bg-gradient-to-br from-indigo-900/10 to-purple-900/10 backdrop-blur-md rounded-2xl p-4 border border-white/5 shadow-lg mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold">Latest News</h2>
+                    <div class="flex items-center gap-2 text-sm text-white/60">
+                        <span>Updated <span id="last-updated-time">2 minutes ago</span></span>
+                        <button id="refresh-button" class="bg-gradient-to-r from-red-500/20 to-orange-500/20 p-1.5 rounded-full">
+                            <!-- RefreshCw Icon (Lucide-react RefreshCw) -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-red-400"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>
+                        </button>
+                        <button id="more-vertical-button" class="p-1.5 cursor-pointer hover:bg-white/10 rounded-full transition-colors">
+                            <!-- MoreVertical Icon (Lucide-react MoreVertical) -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-white/60"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                        </button>
+                        <button id="rotate-3d-button" class="p-1.5 cursor-pointer hover:bg-white/10 rounded-full transition-colors">
+                            <!-- Rotate3D Icon (Lucide-react Rotate3D) -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-white/60"><path d="M16.5 3.5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2 2 2 0 0 0 2-2V5.5a2 2 0 0 0-2-2Z"/><path d="M12 2v20"/><path d="M12 5.5C12 4.12 10.88 3 9.5 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h5.5c1.38 0 2.5-1.12 2.5-2.5V5.5Z"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 news-grid">
+                    {% if articles %}
+                        {% for article in articles %}
+                            <div class="bg-gradient-to-br from-gray-800/20 to-gray-900/20 backdrop-blur-md rounded-2xl overflow-hidden border border-white/5 shadow-lg relative news-card">
+                                <a href="{{ article.url }}" target="_blank" rel="noopener noreferrer" class="block">
+                                    <div class="relative"> <!-- Added relative for absolute positioning of category tag -->
+                                        {% if article.image_url %}
+                                            <img src="{{ article.image_url }}" alt="{{ article.title }}" class="w-full h-40 object-cover">
+                                        {% else %}
+                                            <div class="w-full h-40 bg-gray-700 flex items-center justify-center text-gray-400 text-sm">No Image</div>
+                                        {% endif %}
+                                        <div class="absolute top-3 left-3 {{ 'bg-orange-500' if article.category == 'Politics' else 'bg-green-400' if article.category == 'Technology' else 'bg-purple-500' if article.category == 'Sports' else 'bg-blue-500' }} text-white text-xs px-3 py-1 rounded-full">
+                                            {{ article.category }}
+                                        </div>
+                                    </div>
+                                    <div class="news-card-content">
+                                        <h3 class="news-card-title">{{ article.title }}</h3>
+                                        <div class="news-card-meta">
+                                            <div class="flex items-center gap-1">
+                                                <span>•</span>
+                                                <span>
+                                                    {% set time_diff = now - article.published %}
+                                                    {% if time_diff.days > 0 %}
+                                                        {{ time_diff.days }} days ago
+                                                    {% elif time_diff.seconds // 3600 > 0 %}
+                                                        {{ time_diff.seconds // 3600 }} hours ago
+                                                    {% elif time_diff.seconds // 60 > 0 %}
+                                                        {{ time_diff.seconds // 60 }} minutes ago
+                                                    {% else %}
+                                                        Just now
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                            <div class="flex items-center gap-1">
+                                                <span class="inline-block w-2 h-2 rounded-full" style="background-color: {{ article.sentiment_data.color }};"></span>
+                                                <span style="color: {{ article.sentiment_data.color }};">{{ article.sentiment_data.label }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                                <div class="news-card-actions" data-article-id="{{ article.id }}" data-original-summary="{{ article.summary }}">
+                                    <button class="translate-button text-xs flex items-center gap-1 text-cyan-400 hover:scale-110 active:scale-90 transition-transform"
+                                            data-article-id="{{ article.id }}" data-original-text="{{ article.summary }}" data-target-language="{{ selected_language }}">
+                                        <span class="inline-block w-2 h-2 bg-cyan-400 rounded-full"></span>
+                                        <span>Translate</span>
+                                    </button>
+                                     <button class="original-summary-button text-xs flex items-center gap-1 text-blue-400 hover:scale-110 active:scale-90 transition-transform"
+                                            data-article-id="{{ article.id }}" data-original-text="{{ article.summary }}">
+                                        <!-- FileText Icon (Lucide-react FileText) -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M10 12H8"/><path d="M16 12h-2"/><path d="M16 16H8"/></svg>
+                                        <span>Original</span>
+                                    </button>
+                                    <button class="ai-summary-button text-xs flex items-center gap-1 text-yellow-400 hover:scale-110 active:scale-90 transition-transform"
+                                            data-article-id="{{ article.id }}" data-full-text="{{ article.summary }}">
+                                        <!-- AI Summary Icon (Lightbulb) -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lightbulb"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 14v8"/></svg>
+                                        <span>AI Summary</span>
+                                    </button>
+                                    <button class="simplify-button text-xs flex items-center gap-1 text-teal-400 hover:scale-110 active:scale-90 transition-transform"
+                                            data-article-id="{{ article.id }}" data-full-text="{{ article.summary }}">
+                                        <!-- Sparkle Icon (for Gemini feature) -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles"><path d="M9.9 10.8c.4 1.9 2 3.5 3.9 3.9"/><path d="M15 6l2-2 4 4"/><path d="M12.5 14.5 17 19l4-4"/><path d="M14 12l-4 4-2 2"/><path d="M2 12l4 4 2 2"/></svg>
+                                        <span>Simplify ✨</span>
+                                    </button>
+                                    <button class="audio-button text-xs flex items-center gap-1 text-white/60 hover:scale-110 active:scale-90 transition-transform"
+                                            data-article-id="{{ article.id }}" data-audio-text="{{ article.summary }}" data-lang-code="{{ selected_language }}">
+                                        <span>Audio</span>
+                                        <span class="inline-block w-2 h-2 bg-white/60 rounded-full"></span>
+                                    </button>
+                                    <button class="bookmark-button bookmark-button-bottom text-pink-500" data-article-id="{{ article.id }}" data-bookmarked="{{ 'true' if article.id in bookmarked_articles else 'false' }}">
+                                        <!-- Bookmark Icon -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="{{ 'currentColor' if article.id in bookmarked_articles else 'none' }}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bookmark"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-white/70 col-span-full text-center p-4">No news articles found for the selected criteria.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+
+        <!-- Reading List Content Section -->
+        <section id="Reading List" class="content-section">
+            <div class="card">
+                <h2 class="card-title">📖 Reading List</h2>
+                <p class="card-subtitle">Your saved articles for later reading.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 news-grid mt-6">
+                {% if articles %}
+                    {% for article in articles %}
+                        <div class="bg-gradient-to-br from-gray-800/20 to-gray-900/20 backdrop-blur-md rounded-2xl overflow-hidden border border-white/5 shadow-lg relative news-card">
+                            <a href="{{ article.url }}" target="_blank" rel="noopener noreferrer" class="block">
+                                <div class="relative"> <!-- Added relative for absolute positioning of category tag -->
+                                    {% if article.image_url %}
+                                        <img src="{{ article.image_url }}" alt="{{ article.title }}" class="w-full h-40 object-cover">
+                                    {% else %}
+                                        <div class="w-full h-40 bg-gray-700 flex items-center justify-center text-gray-400 text-sm">No Image</div>
+                                    {% endif %}
+                                    <div class="absolute top-3 left-3 {{ 'bg-orange-500' if article.category == 'Politics' else 'bg-green-400' if article.category == 'Technology' else 'bg-purple-500' if article.category == 'Sports' else 'bg-blue-500' }} text-white text-xs px-3 py-1 rounded-full">
+                                        {{ article.category }}
+                                    </div>
+                                </div>
+                                <div class="news-card-content">
+                                    <h3 class="news-card-title">{{ article.title }}</h3>
+                                    <div class="news-card-meta">
+                                        <div class="flex items-center gap-1">
+                                            <span>•</span>
+                                            <span>
+                                                {% set time_diff = now - article.published %}
+                                                {% if time_diff.days > 0 %}
+                                                    {{ time_diff.days }} days ago
+                                                {% elif time_diff.seconds // 3600 > 0 %}
+                                                    {{ time_diff.seconds // 3600 }} hours ago
+                                                {% elif time_diff.seconds // 60 > 0 %}
+                                                    {{ time_diff.seconds // 60 }} minutes ago
+                                                {% else %}
+                                                    Just now
+                                                {% endif %}
+                                            </span>
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <span class="inline-block w-2 h-2 rounded-full" style="background-color: {{ article.sentiment_data.color }};"></span>
+                                            <span style="color: {{ article.sentiment_data.color }};">{{ article.sentiment_data.label }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                            <div class="news-card-actions" data-article-id="{{ article.id }}" data-original-summary="{{ article.summary }}">
+                                <button class="translate-button text-xs flex items-center gap-1 text-cyan-400 hover:scale-110 active:scale-90 transition-transform"
+                                            data-article-id="{{ article.id }}" data-original-text="{{ article.summary }}" data-target-language="{{ selected_language }}">
+                                    <span class="inline-block w-2 h-2 bg-cyan-400 rounded-full"></span>
+                                    <span>Translate</span>
+                                </button>
+                                <button class="original-summary-button text-xs flex items-center gap-1 text-blue-400 hover:scale-110 active:scale-90 transition-transform"
+                                            data-article-id="{{ article.id }}" data-original-text="{{ article.summary }}">
+                                        <!-- FileText Icon (Lucide-react FileText) -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M10 12H8"/><path d="M16 12h-2"/><path d="M16 16H8"/></svg>
+                                        <span>Original</span>
+                                    </button>
+                                <button class="ai-summary-button text-xs flex items-center gap-1 text-yellow-400 hover:scale-110 active:scale-90 transition-transform"
+                                            data-article-id="{{ article.id }}" data-full-text="{{ article.summary }}">
+                                    <!-- AI Summary Icon (Lightbulb) -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lightbulb"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 14v8"/></svg>
+                                    <span>AI Summary</span>
+                                </button>
+                                <button class="simplify-button text-xs flex items-center gap-1 text-teal-400 hover:scale-110 active:scale-90 transition-transform"
+                                            data-article-id="{{ article.id }}" data-full-text="{{ article.summary }}">
+                                        <!-- Sparkle Icon (for Gemini feature) -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="1":6 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles"><path d="M9.9 10.8c.4 1.9 2 3.5 3.9 3.9"/><path d="M15 6l2-2 4 4"/><path d="M12.5 14.5 17 19l4-4"/><path d="M14 12l-4 4-2 2"/><path d="M2 12l4 4 2 2"/></svg>
+                                        <span>Simplify ✨</span>
+                                </button>
+                                <button class="audio-button text-xs flex items-center gap-1 text-white/60 hover:scale-110 active:scale-90 transition-transform"
+                                            data-article-id="{{ article.id }}" data-audio-text="{{ article.summary }}" data-lang-code="{{ selected_language }}">
+                                    <span>Audio</span>
+                                    <span class="inline-block w-2 h-2 bg-white/60 rounded-full"></span>
+                                </button>
+                                <button class="bookmark-button bookmark-button-bottom text-pink-500" data-article-id="{{ article.id }}" data-bookmarked="{{ 'true' if article.id in bookmarked_articles else 'false' }}">
+                                    <!-- Bookmark Icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="{{ 'currentColor' if article.id in bookmarked_articles else 'none' }}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bookmark"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-white/70 col-span-full text-center p-4">No bookmarked articles found.</p>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Analytics Content Section -->
+        <section id="Analytics" class="content-section">
+            <div class="card">
+                <h2 class="card-title">📊 News Analytics</h2>
+                <p class="card-subtitle">Overview of your reading activity, AI sentiment analysis, and categorized coverage.</p>
+            </div>
+
+            <div class="analytics-grid">
+                <!-- Stats -->
+                <div class="stat-block">
+                    <h3>Total Articles</h3>
+                    <p class="stat-value">{{ total_articles }}</p>
+                </div>
+
+                <div class="stat-block">
+                    <h3>Bookmarked</h3>
+                    <p class="stat-value">{{ bookmark_count }}</p>
+                </div>
+
+                <div class="stat-block">
+                    <h3>Read</h3>
+                    <p class="stat-value">{{ read_articles_count }}</p>
+                </div>
+            </div>
+
+            <!-- Sentiment Distribution -->
+            <div class="chart-section">
+                <h3>🧠 Sentiment Analysis</h3>
+                <canvas id="sentimentChart" height="180"></canvas>
+            </div>
+
+            <!-- Category Distribution -->
+            <div class="chart-section">
+                <h3>📰 Articles by Category</h3>
+                <canvas id="categoryChart" height="180"></canvas>
+            </div>
+
+            <!-- Top Entities -->
+            <div class="card">
+                <h3 class="card-title">🏷️ Top Entities Mentioned</h3>
+                <ul class="entity-list">
+                    {% for entity, count in top_entities %}
+                        <li>{{ entity }} <span class="entity-count">({{ count }})</span></li>
+                    {% else %}
+                        <li>No entities to display.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+
+        <!-- What-If Content Section -->
+        <section id="What-If" class="content-section">
+            <div class="what-if-container">
+                <!-- Page Header -->
+                <div class="card" style="text-align: center; margin-bottom: var(--space-2xl);">
+                    <div style="font-size: 4rem; margin-bottom: var(--space-md); color: var(--info-color);">🔮</div>
+                    <h1 class="card-title">What If Scenarios</h1>
+                    <p class="card-subtitle">
+                        Explore hypothetical situations and understand their potential implications using AI-powered analysis.
+                    </p>
+                </div>
+
+                <!-- Scenario Form -->
+                <form method="POST" class="what-if-form card" id="scenarioForm" action="{{ url_for('generate_what_if') }}">
+                    <div class="form-group">
+                        <label for="current_context" class="form-label">📝 Current Situation / Context</label>
+                        <textarea id="current_context" name="current_context" class="form-textarea" required
+                            placeholder="E.g., The Indian government is considering implementing a universal basic income scheme...">{{ current_context or '' }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="hypothetical_change" class="form-label">🔄 Hypothetical Change / Scenario</label>
+                        <textarea id="hypothetical_change" name="hypothetical_change" class="form-textarea" required
+                            placeholder="E.g., What if the scheme provided ₹15,000 per month to every adult citizen?">{{ hypothetical_change or '' }}</textarea>
+                    </div>
+
+                    <!-- Model Trait Selector -->
+                    <div class="trait-selector">
+                        <h3>🧠 Choose AI Model Trait</h3>
+                        <div class="trait-pills">
+                            {% for trait, model_id in what_if_model_traits.items() %}
+                                <button type="submit" name="selected_model_trait" value="{{ trait }}"
+                                    class="trait-pill {% if selected_trait == trait %}active{% endif %}">
+                                    {{ trait }}
+                                </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="analyzeBtn">🔮 Analyze Scenario</button>
+                        <button type="button" class="btn btn-secondary" onclick="clearWhatIfForm()">🗑️ Clear Form</button>
+                    </div>
+                </form>
+
+                <!-- Generated Result -->
+                {% if scenario_result %}
+                    <div class="scenario-result card">
+                        <h3>📈 Analysis Result ({{ selected_trait or 'Default' }})</h3>
+                        <p><strong>📰 Headline:</strong> {{ scenario_result.headline }}</p>
+                        <p><strong>📄 Article:</strong> {{ scenario_result.article }}</p>
+
+                        <div class="scenario-buttons">
+                            <button onclick="copyModalContent('HEADLINE: ' + document.querySelector('.scenario-result p:nth-of-type(1)').innerText.replace('📰 Headline: ', '') + '\nARTICLE: ' + document.querySelector('.scenario-result p:nth-of-type(2)').innerText.replace('📄 Article: ', ''))" class="btn btn-outline">📋 Copy</button>
+                            <button onclick="downloadModalContent('HEADLINE: ' + document.querySelector('.scenario-result p:nth-of-type(1)').innerText.replace('📰 Headline: ', '') + '\nARTICLE: ' + document.querySelector('.scenario-result p:nth-of-type(2)').innerText.replace('📄 Article: ', ''), 'bharatvaani_what_if_scenario')" class="btn btn-outline">⬇️ Download</button>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="card p-4 text-center text-white/70">
+                        <p>No scenario generated yet. Fill out the form above to explore a "What If" scenario.</p>
+                        <p class="mt-2 text-sm">This feature is currently under development. More functionalities will be added soon!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Scenarios Content Section -->
+        <section id="Scenarios" class="content-section">
+            <div class="card">
+                <h2 class="card-title">📝 Saved Scenarios</h2>
+                <p class="card-subtitle">Manage your previously created hypothetical scenarios.</p>
+            </div>
+            <div class="p-4 bg-white/5 rounded-lg border border-white/10 mt-4 text-white/70">
+                <p>No saved scenarios yet.</p>
+            </div>
+        </section>
+
+        <!-- Settings Content Section -->
+        <section id="Settings" class="content-section">
+            <div class="card">
+                <h2 class="card-title">⚙️ Settings</h2>
+                <p class="card-subtitle">Adjust your preferences and account settings.</p>
+            </div>
+            <div class="p-4 bg-white/5 rounded-lg border border-white/10 mt-4 text-white/70">
+                <p>Settings options will be available here.</p>
+                <div class="mt-4 flex flex-col gap-4">
+                    <form action="{{ url_for('clear_reading_progress') }}" method="POST">
+                        <button type="submit" class="btn btn-secondary w-full">Clear Reading Progress</button>
+                    </form>
+                    <form action="{{ url_for('clear_bookmarks') }}" method="POST">
+                        <button type="submit" class="btn btn-secondary w-full">Clear Bookmarks</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Custom Toast Container -->
+    <div id="custom-toast-container"></div>
+
+    <!-- Modal for AI Summary and Simplify -->
+    <div id="aiSummaryModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[1001] hidden">
+        <div class="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-lg rounded-2xl p-6 w-11/12 max-w-2xl border border-white/10 shadow-xl relative">
+            <button class="absolute top-4 right-4 text-white/70 hover:text-white" onclick="closeModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+            <h3 class="text-2xl font-bold text-white mb-4" id="modalTitle">AI Summary</h3>
+            <div id="modalContent" class="text-white/80 text-md leading-relaxed mb-4">
+                <!-- Content will be loaded here -->
+                <div class="loading-spinner"></div>
+                <p class="text-center text-white/60">Generating content...</p>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button class="btn btn-secondary" onclick="copyModalContent()">📋 Copy</button>
+                <button class="btn btn-primary" id="downloadModalContentBtn">⬇️ Download</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // Global functions for modal control and toast messages
+        function showToast(message, type = 'success', duration = 3000) {
+            const customToastContainer = document.getElementById('custom-toast-container');
+            const toastDiv = document.createElement('div');
+            toastDiv.className = `custom-toast ${type}`;
+            toastDiv.innerHTML = `<span>${message}</span>`;
+            customToastContainer.appendChild(toastDiv);
+
+            if (duration > 0) {
+                setTimeout(() => {
+                    toastDiv.classList.add('hide');
+                    toastDiv.addEventListener('animationend', () => {
+                        toastDiv.remove();
+                    }, { once: true });
+                }, duration);
+            }
+            return toastDiv;
+        }
+
+        function openModal(title) {
+            const modal = document.getElementById('aiSummaryModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalContent = document.getElementById('modalContent');
+            modalTitle.textContent = title;
+            modalContent.innerHTML = `
+                <div class="loading-spinner"></div>
+                <p class="text-center text-white/60">Generating content...</p>
+            `;
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('aiSummaryModal');
+            const modalContent = document.getElementById('modalContent');
+            const downloadModalContentBtn = document.getElementById('downloadModalContentBtn');
+            modal.classList.add('hidden');
+            modalContent.innerHTML = '';
+            downloadModalContentBtn.onclick = null;
+        }
+
+        function copyModalContent(contentToCopy = null) {
+            const modalContent = document.getElementById('modalContent');
+            let textToCopy;
+            if (contentToCopy) {
+                textToCopy = contentToCopy;
+            } else {
+                textToCopy = modalContent.innerText;
+            }
+
+            if (textToCopy && !textToCopy.includes("Generating content") && !textToCopy.includes("Error:")) {
+                const tempTextArea = document.createElement('textarea');
+                tempTextArea.value = textToCopy;
+                document.body.appendChild(tempTextArea);
+                tempTextArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempTextArea);
+                showToast('✅ Content copied to clipboard!', 'success');
+            } else {
+                showToast('ℹ️ No content to copy yet or an error occurred.', 'info');
+            }
+        }
+
+        async function downloadModalContent(content, filenamePrefix) {
+            try {
+                const blob = new Blob([content], { type: 'text/plain' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${filenamePrefix}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+                showToast('⬇️ Content downloaded!', 'success');
+            } catch (error) {
+                showToast('Failed to download content. Please try again.', 'error');
+                console.error('Error downloading content:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabsMapping = {
+                "News Feed": "dashboard",
+                "Reading List": "reading-list",
+                "Analytics": "analytics",
+                "What-If": "what_if_scenarios",
+                "Scenarios": null,
+                "Settings": "settings"
+            };
+            const initialActiveTab = "{{ active_tab or 'news_feed' }}";
+
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const contentSections = document.querySelectorAll('.content-section');
+            const refreshButton = document.getElementById('refresh-button');
+            const lastUpdatedTimeSpan = document.getElementById('last-updated-time');
+            const searchInput = document.getElementById('search-input'); // Get the search input
+
+            // Header buttons
+            const moreVerticalButton = document.getElementById('more-vertical-button');
+            const rotate3dButton = document.getElementById('rotate-3d-button');
+
+            // Function to update active tab and content
+            function updateActiveTab(selectedTabName) {
+                contentSections.forEach(section => section.classList.remove('active'));
+                tabButtons.forEach(button => {
+                    button.classList.remove('bg-gradient-to-r', 'from-cyan-500/80', 'to-purple-500/80', 'text-white', 'shadow-lg');
+                    button.classList.add('text-white/60', 'hover:text-white/90');
+                });
+
+                const targetSection = document.getElementById(selectedTabName);
+                if (targetSection) {
+                    targetSection.classList.add('active');
+                }
+
+                const targetButton = document.querySelector(`.tab-button[data-tab="${selectedTabName}"]`);
+                if (targetButton) {
+                    targetButton.classList.add('bg-gradient-to-r', 'from-cyan-500/80', 'to-purple-500/80', 'text-white', 'shadow-lg');
+                    targetButton.classList.remove('text-white/60', 'hover:text-white/90');
+                }
+
+                if (selectedTabName === 'Analytics') {
+                    renderAnalyticsCharts();
+                }
+            }
+
+            // Event listeners for tab buttons
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabName = button.dataset.tab;
+                    const flaskRoute = tabsMapping[tabName];
+
+                    if (flaskRoute) {
+                         window.location.href = `/${flaskRoute}`;
+                    } else {
+                        updateActiveTab(tabName);
+                    }
+                });
+            });
+
+            // Handle refresh button click
+            if (refreshButton) {
+                refreshButton.addEventListener('click', () => {
+                    const icon = refreshButton.querySelector('svg');
+                    icon.classList.add('animate-spin-slow');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                });
+            }
+
+            // Header buttons functionality
+            if (moreVerticalButton) {
+                moreVerticalButton.addEventListener('click', () => {
+                    showToast('More options coming soon!', 'info');
+                });
+            }
+            if (rotate3dButton) {
+                rotate3dButton.addEventListener('click', () => {
+                    showToast('3D view feature under development!', 'info');
+                });
+            }
+
+            // Search input functionality
+            if (searchInput) {
+                searchInput.addEventListener('keypress', (event) => {
+                    if (event.key === 'Enter') {
+                        event.preventDefault(); // Prevent default form submission
+                        const query = searchInput.value;
+                        const currentUrl = new URL(window.location.href);
+                        currentUrl.searchParams.set('search_query', query);
+                        window.location.href = currentUrl.toString();
+                    }
+                });
+            }
+
+
+            // --- AI Summary Functionality ---
+            document.querySelectorAll('.ai-summary-button').forEach(button => {
+                button.addEventListener('click', async () => {
+                    const articleId = button.dataset.articleId;
+                    const fullText = button.dataset.fullText;
+                    const originalButtonHtml = button.innerHTML;
+
+                    openModal('AI Summary');
+                    const toast = showToast('Generating AI summary...', 'info', 0);
+                    button.disabled = true;
+                    button.innerHTML = '<span class="button-spinner"></span> AI Summarying...';
+
+                    try {
+                        const response = await fetch('/api/summarize', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ full_text: fullText, target_language: "{{ selected_language }}" })
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            document.getElementById('modalContent').innerHTML = `<p>${data.summary}</p>`;
+                            document.getElementById('downloadModalContentBtn').onclick = () => downloadModalContent(data.summary, `bharatvaani_summary_${articleId}_{{ selected_language }}`);
+                            showToast('✅ AI Summary generated!', 'success');
+                        } else {
+                            document.getElementById('modalContent').innerHTML = `<p class="text-red-400">Error: ${data.error}</p>`;
+                            showToast(`AI Summary failed: ${data.error}`, 'error');
+                        }
+                    } catch (error) {
+                        document.getElementById('modalContent').innerHTML = `<p class="text-red-400">Failed to fetch AI summary. Please try again.</p>`;
+                        showToast('Failed to fetch AI summary.', 'error');
+                        console.error('Error fetching AI summary:', error);
+                    } finally {
+                        if (toast) toast.remove();
+                        button.disabled = false;
+                        button.innerHTML = originalButtonHtml;
+                    }
+                });
+            });
+
+            // --- Simplify Button Functionality ---
+            document.querySelectorAll('.simplify-button').forEach(button => {
+                button.addEventListener('click', async () => {
+                    const articleId = button.dataset.articleId;
+                    const fullText = button.dataset.fullText;
+                    const originalButtonHtml = button.innerHTML;
+
+                    openModal('Simplified Article ✨');
+                    const toast = showToast('Simplifying article...', 'info', 0);
+                    button.disabled = true;
+                    button.innerHTML = '<span class="button-spinner"></span> Simplifying...';
+
+                    try {
+                        const response = await fetch('/api/simplify_text', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ text: fullText })
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            document.getElementById('modalContent').innerHTML = `<p>${data.simplified_text}</p>`;
+                            document.getElementById('downloadModalContentBtn').onclick = () => downloadModalContent(data.simplified_text, `bharatvaani_simplified_${articleId}`);
+                            showToast('✅ Article simplified!', 'success');
+                        } else {
+                            document.getElementById('modalContent').innerHTML = `<p class="text-red-400">Error: ${data.error}</p>`;
+                            showToast(`Simplification failed: ${data.error}`, 'error');
+                        }
+                    } catch (error) {
+                        document.getElementById('modalContent').innerHTML = `<p class="text-red-400">Failed to simplify article. Please try again.</p>`;
+                        showToast('Failed to simplify article.', 'error');
+                        console.error('Error simplifying article:', error);
+                    } finally {
+                        if (toast) toast.remove();
+                        button.disabled = false;
+                        button.innerHTML = originalButtonHtml;
+                    }
+                });
+            });
+
+
+            // --- Translate Button Functionality ---
+            document.querySelectorAll('.translate-button').forEach(button => {
+                button.addEventListener('click', async () => {
+                    const articleCard = button.closest('.news-card');
+                    const articleId = button.dataset.articleId;
+                    const originalText = button.dataset.originalText;
+                    const targetLanguage = document.getElementById('language-select').value;
+                    const originalButtonHtml = button.innerHTML;
+
+                    const toast = showToast('Translating...', 'info', 0);
+                    button.disabled = true;
+                    button.innerHTML = '<span class="button-spinner"></span> Translating...';
+
+                    try {
+                        const response = await fetch('/api/translate', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ text: originalText, target_language: targetLanguage, article_id: articleId })
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            const titleElement = articleCard.querySelector('.news-card-title');
+                            if (titleElement) {
+                                titleElement.textContent = data.translated_text;
+                                articleCard.dataset.translatedSummary = data.translated_text;
+                                articleCard.dataset.translatedLang = targetLanguage;
+                                showToast('✅ Article translated!', 'success');
+                            }
+                        } else {
+                            showToast(`Translation failed: ${data.error}`, 'error');
+                        }
+                    } catch (error) {
+                        showToast('Failed to translate article.', 'error');
+                        console.error('Error translating article:', error);
+                    } finally {
+                        if (toast) toast.remove();
+                        button.disabled = false;
+                        button.innerHTML = originalButtonHtml;
+                    }
+                });
+            });
+
+            // --- Original Summary Button Functionality ---
+            document.querySelectorAll('.original-summary-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const articleId = button.dataset.articleId;
+                    const originalText = button.dataset.originalText;
+
+                    openModal('Original Summary');
+                    document.getElementById('modalContent').innerHTML = `<p>${originalText}</p>`;
+                    document.getElementById('downloadModalContentBtn').onclick = () => downloadModalContent(originalText, `bharatvaani_original_summary_${articleId}`);
+                    showToast('Original summary displayed.', 'info');
+                });
+            });
+
+
+            // --- Audio Button Functionality ---
+            let currentAudio = null;
+
+            document.querySelectorAll('.audio-button').forEach(button => {
+                button.addEventListener('click', async () => {
+                    const articleCard = button.closest('.news-card');
+                    const articleId = button.dataset.articleId;
+                    const originalAudioText = button.dataset.audioText;
+                    const currentSelectedLang = document.getElementById('language-select').value;
+                    const originalButtonHtml = button.innerHTML;
+
+
+                    let textToSpeak = originalAudioText;
+                    let langCodeForAudio = currentSelectedLang;
+
+                    if (articleCard.dataset.translatedLang === currentSelectedLang && articleCard.dataset.translatedSummary) {
+                        textToSpeak = articleCard.dataset.translatedSummary;
+                        console.log(`Using translated text for audio for article ${articleId} in ${currentSelectedLang}.`);
+                    } else {
+                        console.log(`Using original text for audio for article ${articleId} in ${currentSelectedLang}.`);
+                    }
+
+                    if (!textToSpeak) {
+                        showToast('No text available for audio.', 'error');
+                        return;
+                    }
+
+                    if (currentAudio) {
+                        currentAudio.pause();
+                        currentAudio.currentTime = 0;
+                        currentAudio = null;
+                        button.innerHTML = originalButtonHtml;
+                        return;
+                    }
+
+                    const toast = showToast('Generating audio...', 'info', 0);
+                    button.disabled = true;
+                    button.innerHTML = `<span><svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.418 0h.582m-15.418 0a8.001 8.001 0 004.965 7.388L9 20.25m-2.233-2.233A6.002 6.002 0 015.354 12H6m15 0h-1.042A2.991 2.991 0 0018 14.958M18 12a8.001 8.001 0 00-4.965-7.388L12 3.75m2.233 2.233A6.002 6.002 0 0118.646 12H18m0 0v-5h.582m-15.418 0h.582"/></svg></span><span>Playing...</span>`;
+
+
+                    try {
+                        const response = await fetch('/api/audio', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ text: textToSpeak, lang_code: langCodeForAudio, article_id: articleId })
+                        });
+                        const data = await response.json();
+                        if (data.success && data.audio_base64) {
+                            const audio = new Audio(`data:audio/mp3;base64,${data.audio_base64}`);
+                            currentAudio = audio;
+                            audio.play();
+                            showToast('▶️ Playing audio!', 'success');
+
+                            audio.onended = () => {
+                                currentAudio = null;
+                                button.innerHTML = originalButtonHtml;
+                            };
+                            audio.onerror = (e) => {
+                                console.error('Audio playback error:', e);
+                                showToast('Failed to play audio.', 'error');
+                                currentAudio = null;
+                                button.innerHTML = originalButtonHtml;
+                            };
+                        } else {
+                            showToast(`Audio generation failed: ${data.error}`, 'error');
+                            button.innerHTML = originalButtonHtml;
+                        }
+                    } catch (error) {
+                        showToast('Failed to generate audio.', 'error');
+                        console.error('Error generating audio:', error);
+                        button.innerHTML = originalButtonHtml;
+                    } finally {
+                        if (toast) toast.remove();
+                    }
+                });
+            });
+
+            // --- Bookmark Button Functionality ---
+            document.querySelectorAll('.bookmark-button').forEach(button => {
+                button.addEventListener('click', async () => {
+                    const articleId = button.dataset.articleId;
+                    const isBookmarked = button.dataset.bookmarked === 'true';
+                    const bookmarkIcon = button.querySelector('svg');
+
+                    try {
+                        const response = await fetch('/api/toggle_bookmark', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ article_id: articleId })
+                        });
+                        const data = await response.json();
+
+                        if (data.success) {
+                            button.dataset.bookmarked = data.is_bookmarked;
+                            if (data.is_bookmarked) {
+                                bookmarkIcon.setAttribute('fill', 'currentColor');
+                                showToast('✅ Bookmarked!', 'success');
+                            } else {
+                                bookmarkIcon.setAttribute('fill', 'none');
+                                showToast('Removed from bookmarks!', 'info');
+                            }
+                        } else {
+                            showToast(`Bookmark update failed: ${data.error}`, 'error');
+                        }
+                    } catch (error) {
+                        showToast('Failed to update bookmark status.', 'error');
+                        console.error('Error toggling bookmark:', error);
+                    }
+                });
+            });
+
+
+            // --- Analytics Chart Rendering ---
+            let sentimentChartInstance = null;
+            let categoryChartInstance = null;
+
+            function renderAnalyticsCharts() {
+                const sentimentCtx = document.getElementById('sentimentChart').getContext('2d');
+                const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+
+                if (sentimentChartInstance) {
+                    sentimentChartInstance.destroy();
+                }
+                if (categoryChartInstance) {
+                    categoryChartInstance.destroy();
+                }
+
+                const sentiments = JSON.parse('{{ sentiments_count | tojson }}' || '{}');
+                const categories = JSON.parse('{{ categories_count | tojson }}' || '{}');
+
+                sentimentChartInstance = new Chart(sentimentCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(sentiments),
+                        datasets: [{
+                            data: Object.values(sentiments),
+                            backgroundColor: [
+                                '#4ADE80',
+                                '#60A5FA',
+                                '#F87171',
+                                '#A0A0C0',
+                                '#FACC15'
+                            ],
+                            borderColor: 'rgba(255, 255, 255, 0.1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: 'var(--text-light)'
+                                }
+                            },
+                            title: {
+                                display: false,
+                                text: 'Sentiment Distribution',
+                                color: 'var(--text-light)'
+                            }
+                        }
+                    }
+                });
+
+                categoryChartInstance = new Chart(categoryCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(categories),
+                        datasets: [{
+                            label: 'Number of Articles',
+                            data: Object.values(categories),
+                            backgroundColor: [
+                                '#F97316',
+                                '#4ADE80',
+                                '#A855F7',
+                                '#60A5FA',
+                                '#EC4899',
+                                '#22D3EE',
+                                '#3730A3',
+                                '#581C87'
+                            ],
+                            borderColor: 'rgba(255, 255, 255, 0.1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            title: {
+                                display: false,
+                                text: 'Articles by Category',
+                                color: 'var(--text-light)'
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: {
+                                    color: 'var(--text-muted)'
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.05)'
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    color: 'var(--text-muted)',
+                                    precision: 0
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.05)'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+
+            // --- What-If Scenario Functions ---
+            function clearWhatIfForm() {
+                document.getElementById('current_context').value = '';
+                document.getElementById('hypothetical_change').value = '';
+                const currentContextCharCount = document.querySelector('#current_context + .char-count-display');
+                if (currentContextCharCount) currentContextCharCount.textContent = '0/2000';
+                const hypotheticalChangeCharCount = document.querySelector('#hypothetical_change + .char-count-display');
+                if (hypotheticalChangeCharCount) hypotheticalChangeCharCount.textContent = '0/1000';
+            }
+
+            function addCharacterCount(textareaId, maxLength) {
+                const textarea = document.getElementById(textareaId);
+                if (!textarea) return;
+
+                const charCountDisplay = document.createElement('div');
+                charCountDisplay.className = 'char-count-display';
+                charCountDisplay.style.fontSize = 'var(--font-size-xs)';
+                charCountDisplay.style.color = 'var(--text-muted)';
+                charCountDisplay.style.textAlign = 'right';
+                charCountDisplay.style.marginTop = 'var(--space-xs)';
+                textarea.parentNode.appendChild(charCountDisplay);
+
+                const updateCount = () => {
+                    const currentLength = textarea.value.length;
+                    charCountDisplay.textContent = `${currentLength}/${maxLength}`;
+                    if (currentLength > maxLength) {
+                        charCountDisplay.style.color = 'var(--error-color)';
+                    } else {
+                        charCountDisplay.style.color = 'var(--text-muted)';
+                    }
+                };
+
+                textarea.addEventListener('input', updateCount);
+                updateCount();
+            }
+
+            addCharacterCount('current_context', 2000);
+            addCharacterCount('hypothetical_change', 1000);
+
+            const formattedInitialTab = initialActiveTab.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+            updateActiveTab(formattedInitialTab);
+
+            const flashMessages = document.querySelectorAll('.flash-messages-container .alert');
+            flashMessages.forEach(msg => {
+                setTimeout(() => {
+                    msg.classList.add('hide');
+                    msg.addEventListener('animationend', () => {
+                        msg.remove();
+                    }, { once: true });
+                }, 5000);
+            });
+
+        });
+    </script>
+</body>
+</html>

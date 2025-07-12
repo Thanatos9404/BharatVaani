@@ -1,0 +1,161 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div class="what-if-container">
+
+  <!-- Page Header -->
+  <div class="card" style="text-align: center; margin-bottom: var(--space-2xl);">
+    <div style="font-size: 4rem; margin-bottom: var(--space-md); color: var(--info-color);">🔮</div>
+    <h1 class="card-title">What If Scenarios</h1>
+    <p class="card-subtitle">
+      Explore hypothetical situations and understand their potential implications using AI-powered analysis.
+    </p>
+  </div>
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ 'error' if category == 'error' else 'success' if category == 'success' else 'info' }}" role="alert">
+          {% if category == 'error' %}⚠️{% elif category == 'success' %}✅{% else %}ℹ️{% endif %}
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <!-- Scenario Form -->
+  <form method="POST" class="what-if-form card" id="scenarioForm">
+    <div class="form-group">
+      <label for="current_context" class="form-label">📝 Current Situation / Context</label>
+      <textarea id="current_context" name="current_context" class="form-textarea" required
+        placeholder="E.g., The Indian government is considering implementing a universal basic income scheme...">{{ current_context or '' }}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="hypothetical_change" class="form-label">🔄 Hypothetical Change / Scenario</label>
+      <textarea id="hypothetical_change" name="hypothetical_change" class="form-textarea" required
+        placeholder="E.g., What if the scheme provided ₹15,000 per month to every adult citizen?">{{ hypothetical_change or '' }}</textarea>
+    </div>
+
+    <!-- Model Trait Selector -->
+    <div class="trait-selector">
+      <h3>🧠 Choose AI Model Trait</h3>
+      <div class="trait-pills">
+        {% for trait, model_id in what_if_model_traits.items() %}
+          <button type="submit" name="selected_model_trait" value="{{ trait }}"
+            class="trait-pill {% if selected_trait == trait %}active{% endif %}">
+            {{ trait }}
+          </button>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" id="analyzeBtn">🔮 Analyze Scenario</button>
+      <button type="button" class="btn btn-secondary" onclick="clearForm()">🗑️ Clear Form</button>
+    </div>
+  </form>
+
+  <!-- Generated Result -->
+  {% if scenario_result %}
+    <div class="scenario-result card">
+      <h3>📈 Analysis Result ({{ selected_trait or 'Default' }})</h3>
+      <p><strong>📰 Headline:</strong> {{ scenario_result.headline }}</p>
+      <p><strong>📄 Article:</strong> {{ scenario_result.article }}</p>
+
+      <div class="scenario-buttons">
+        <button onclick="copyToClipboard()" class="btn btn-outline">📋 Copy</button>
+        <button onclick="downloadScenario()" class="btn btn-outline">⬇️ Download</button>
+      </div>
+    </div>
+  {% endif %}
+
+</div>
+
+<!-- Scripts -->
+<script>
+function clearForm() {
+  document.getElementById('current_context').value = '';
+  document.getElementById('hypothetical_change').value = '';
+}
+
+function copyToClipboard() {
+  const result = document.querySelector('.scenario-result');
+  if (result) {
+    // Create a temporary textarea to hold the text for copying
+    const tempTextArea = document.createElement('textarea');
+    tempTextArea.value = `Headline: ${result.querySelector('p:nth-of-type(1)').innerText}\nArticle: ${result.querySelector('p:nth-of-type(2)').innerText}`;
+    document.body.appendChild(tempTextArea);
+    tempTextArea.select();
+    document.execCommand('copy'); // Use document.execCommand for broader compatibility in iframes
+    document.body.removeChild(tempTextArea);
+    showTemporaryMessage('✅ Copied to clipboard!', 'success');
+  }
+}
+
+function downloadScenario() {
+  const result = document.querySelector('.scenario-result');
+  if (result) {
+    const text = `Headline: ${result.querySelector('p:nth-of-type(1)').innerText}\nArticle: ${result.querySelector('p:nth-of-type(2)').innerText}`;
+    const blob = new Blob([text], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'bharatvaani_what_if_scenario.txt';
+    link.click();
+    showTemporaryMessage('⬇️ Scenario downloaded!', 'success');
+  }
+}
+
+// Helper function for temporary messages (copied from index.html)
+function showTemporaryMessage(message, type = 'info') {
+    const container = document.querySelector('.main-content .container');
+    let messageDiv = document.getElementById('temp-message');
+    if (!messageDiv) {
+        messageDiv = document.createElement('div');
+        messageDiv.id = 'temp-message';
+        messageDiv.classList.add('alert');
+        container.prepend(messageDiv);
+    }
+    messageDiv.className = `alert alert-${type}`;
+    messageDiv.innerHTML = `${type === 'error' ? '⚠️' : type === 'success' ? '✅' : 'ℹ️'} ${message}`;
+    messageDiv.style.display = 'flex';
+    setTimeout(() => {
+        messageDiv.style.display = 'none';
+    }, 5000);
+}
+
+// Character count for textareas
+function addCharacterCount(textareaId, maxLength) {
+    const textarea = document.getElementById(textareaId);
+    if (!textarea) return;
+
+    const charCountDisplay = document.createElement('div');
+    charCountDisplay.className = 'char-count-display';
+    charCountDisplay.style.fontSize = 'var(--font-size-xs)';
+    charCountDisplay.style.color = 'var(--text-muted)';
+    charCountDisplay.style.textAlign = 'right';
+    charCountDisplay.style.marginTop = 'var(--space-xs)';
+    textarea.parentNode.appendChild(charCountDisplay);
+
+    const updateCount = () => {
+        const currentLength = textarea.value.length;
+        charCountDisplay.textContent = `${currentLength}/${maxLength}`;
+        if (currentLength > maxLength) {
+            charCountDisplay.style.color = 'var(--error-color)';
+        } else {
+            charCountDisplay.style.color = 'var(--text-muted)';
+        }
+    };
+
+    textarea.addEventListener('input', updateCount);
+    updateCount(); // Initial count
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    addCharacterCount('current_context', 2000); // Example max length
+    addCharacterCount('hypothetical_change', 1000); // Example max length
+});
+
+</script>
+{% endblock %}
