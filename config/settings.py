@@ -11,7 +11,7 @@ CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
 REDIRECT_URI = os.getenv('REDIRECT_URI', 'http://localhost:5000/oauth2callback')
 FLASK_APP_BASE_URL = os.getenv('FLASK_APP_BASE_URL', 'http://localhost:5000')
 
-# Required Google OAuth scopes
+# Google OAuth scopes
 SCOPES = [
     'https://www.googleapis.com/auth/userinfo.profile',
     'https://www.googleapis.com/auth/userinfo.email',
@@ -59,7 +59,6 @@ DEFAULT_TARGET_LANGUAGE = "en" # Default to English
 DEFAULT_ARTICLE_LIMIT = 10 # Default number of articles to fetch
 
 # --- RSS Feeds Configuration ---
-# Moved from ai_news.py
 RSS_FEEDS = {
     "India News": ["https://timesofindia.indiatimes.com/rssfeeds/-2128936835.cms",
                    "https://indianexpress.com/section/india/feed/",
@@ -100,9 +99,9 @@ RSS_FEEDS = {
                 ]
 }
 
-# Keywords for categorizing articles (used for both NewsAPI and RSS)
+# Keywords for categorizing articles
 CATEGORY_KEYWORDS = {
-    "General": ["news", "current events", "headlines", "breaking"], # Added a general category for broader matching
+    "General": ["news", "current events", "headlines", "breaking"],
     "National": [
         "india", "modi", "delhi", "government", "parliament", "supreme court",
         "indian", "mumbai", "bengaluru", "chennai", "kolkata", "lok sabha",
@@ -129,7 +128,7 @@ CATEGORY_KEYWORDS = {
         "supply chain", "logistics", "manufacturing", "exports", "imports",
         "employment", "unemployment", "job market", "remittances", "currency"
     ],
-    "Politics": [ # Renamed from 'National' in some contexts to 'Politics' for clarity
+    "Politics": [ 
         "election", "campaign", "voter", "foreign policy", "biden", "putin", "un",
         "elections", "political party", "congress", "bjp", "aap", "trinamool congress",
         "legislature", "diplomacy", "international relations", "summit meeting",
@@ -218,7 +217,6 @@ CATEGORY_KEYWORDS = {
 SUMMARIZER_MODEL_NAME = "sshleifer/distilbart-cnn-12-6" # Added this line
 
 # --- What If Scenario Models (OpenRouter.ai) ---
-# These are free models available via OpenRouter.ai
 WHAT_IF_MODELS = [
     "meta-llama/llama-3.1-8b-instruct:free",
     "google/gemma-2-9b-it:free",
@@ -230,7 +228,7 @@ WHAT_IF_MODELS = [
     "gryphe/mythomist-7b:free",
 ]
 
-# Model traits mapping with working models for "What If Scenarios"
+# Model traits mapping
 WHAT_IF_MODEL_TRAITS = {
     "Balanced & Insightful": "meta-llama/llama-3.1-8b-instruct:free",
     "Creative & Dramatic": "gryphe/mythomist-7b:free",
@@ -246,7 +244,7 @@ def get_google_client_config():
     return {
         "web": {
             "client_id": CLIENT_ID,
-            "project_id": "bharatvaani-news",  # optional, for consistency
+            "project_id": "bharatvaani-news", 
             "auth_uri": "https://accounts.google.com/o/oauth2/auth",
             "token_uri": "https://oauth2.googleapis.com/token",
             "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
