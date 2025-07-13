@@ -94,10 +94,6 @@ In India, particularly in Tier 2 and Tier 3 regions, access to timely and releva
 
 ---
 
-> **Note:** Not all frontend frameworks (like Framer Motion or Lucide-react) are in the Flask-only version of the app. They’re included here because they appeared in your experiments and may be integrated in the future.
-
----
-
 ## 🚀 Setup and Installation (Local Development)
 
 ### Prerequisites
