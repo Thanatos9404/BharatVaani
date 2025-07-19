@@ -110,8 +110,8 @@ In India, particularly in Tier 2 and Tier 3 regions, access to timely and releva
 
 ```bash
 
-git clone https://github.com/Thanatos9404/AI-News-Summarizer.git
-cd AI-News-Summarizer
+git clone https://github.com/Thanatos9404/BharatVaani.git
+cd BharatVaani
 ```
 
 #### 2. Create and activate a virtual environment
