@@ -901,40 +901,56 @@
                                         </div>
                                     </div>
                                 </a>
-                                <div class="news-card-actions" data-article-id="{{ article.id }}" data-original-summary="{{ article.summary }}">
-                                    <button class="translate-button text-xs flex items-center gap-1 text-cyan-400 hover:scale-110 active:scale-90 transition-transform"
-                                            data-article-id="{{ article.id }}" data-original-text="{{ article.summary }}" data-target-language="{{ selected_language }}">
-                                        <span class="inline-block w-2 h-2 bg-cyan-400 rounded-full"></span>
-                                        <span>Translate</span>
-                                    </button>
-                                     <button class="original-summary-button text-xs flex items-center gap-1 text-blue-400 hover:scale-110 active:scale-90 transition-transform"
-                                            data-article-id="{{ article.id }}" data-original-text="{{ article.summary }}">
-                                        <!-- FileText Icon (Lucide-react FileText) -->
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M10 12H8"/><path d="M16 12h-2"/><path d="M16 16H8"/></svg>
-                                        <span>Original</span>
-                                    </button>
-                                    <button class="ai-summary-button text-xs flex items-center gap-1 text-yellow-400 hover:scale-110 active:scale-90 transition-transform"
-                                            data-article-id="{{ article.id }}" data-full-text="{{ article.summary }}">
-                                        <!-- AI Summary Icon (Lightbulb) -->
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lightbulb"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 14v8"/></svg>
-                                        <span>AI Summary</span>
-                                    </button>
-                                    <button class="simplify-button text-xs flex items-center gap-1 text-teal-400 hover:scale-110 active:scale-90 transition-transform"
-                                            data-article-id="{{ article.id }}" data-full-text="{{ article.summary }}">
-                                        <!-- Sparkle Icon (for Gemini feature) -->
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles"><path d="M9.9 10.8c.4 1.9 2 3.5 3.9 3.9"/><path d="M15 6l2-2 4 4"/><path d="M12.5 14.5 17 19l4-4"/><path d="M14 12l-4 4-2 2"/><path d="M2 12l4 4 2 2"/></svg>
-                                        <span>Simplify ✨</span>
-                                    </button>
-                                    <button class="audio-button text-xs flex items-center gap-1 text-white/60 hover:scale-110 active:scale-90 transition-transform"
-                                            data-article-id="{{ article.id }}" data-audio-text="{{ article.summary }}" data-lang-code="{{ selected_language }}">
-                                        <span>Audio</span>
-                                        <span class="inline-block w-2 h-2 bg-white/60 rounded-full"></span>
-                                    </button>
-                                    <button class="bookmark-button bookmark-button-bottom text-pink-500" data-article-id="{{ article.id }}" data-bookmarked="{{ 'true' if article.id in bookmarked_articles else 'false' }}">
-                                        <!-- Bookmark Icon -->
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="{{ 'currentColor' if article.id in bookmarked_articles else 'none' }}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bookmark"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
-                                    </button>
-                                </div>
+                                {% if article.summary %}
+                                    <div class="news-card-actions" data-article-id="{{ article.id }}" data-original-summary="{{ article.summary }}">
+                                        <button class="translate-button text-xs flex items-center gap-1 text-cyan-400 hover:scale-110 active:scale-90 transition-transform"
+                                                data-article-id="{{ article.id }}"
+                                                data-original-text="{{ article.summary | e }}"
+                                                data-target-language="{{ selected_language }}">
+                                            <span class="inline-block w-2 h-2 bg-cyan-400 rounded-full"></span>
+                                            <span>Translate</span>
+                                        </button>
+
+                                        <button class="original-summary-button text-xs flex items-center gap-1 text-blue-400 hover:scale-110 active:scale-90 transition-transform"
+                                                data-article-id="{{ article.id }}"
+                                                data-original-text="{{ article.summary | e }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" class="lucide lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M10 12H8"/><path d="M16 12h-2"/><path d="M16 16H8"/></svg>
+                                            <span>Original</span>
+                                        </button>
+
+                                        <button class="ai-summary-button text-xs flex items-center gap-1 text-yellow-400 hover:scale-110 active:scale-90 transition-transform"
+                                                data-article-id="{{ article.id }}" data-full-text="{{ article.summary | e }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" class="lucide lucide-lightbulb"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 14v8"/></svg>
+                                            <span>AI Summary</span>
+                                        </button>
+
+                                        <button class="simplify-button text-xs flex items-center gap-1 text-teal-400 hover:scale-110 active:scale-90 transition-transform"
+                                                data-article-id="{{ article.id }}" data-full-text="{{ article.summary | e }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" class="lucide lucide-sparkles"><path d="M9.9 10.8c.4 1.9 2 3.5 3.9 3.9"/><path d="M15 6l2-2 4 4"/><path d="M12.5 14.5 17 19l4-4"/><path d="M14 12l-4 4-2 2"/><path d="M2 12l4 4 2 2"/></svg>
+                                            <span>Simplify ✨</span>
+                                        </button>
+
+                                        <button class="audio-button text-xs flex items-center gap-1 text-white/60 hover:scale-110 active:scale-90 transition-transform"
+                                                data-article-id="{{ article.id }}" data-audio-text="{{ article.summary | e }}" data-lang-code="{{ selected_language }}">
+                                            <span>Audio</span>
+                                            <span class="inline-block w-2 h-2 bg-white/60 rounded-full"></span>
+                                        </button>
+
+                                        <button class="bookmark-button bookmark-button-bottom text-pink-500"
+                                                data-article-id="{{ article.id }}"
+                                                data-bookmarked="{{ 'true' if article.id in bookmarked_articles else 'false' }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="{{ 'currentColor' if article.id in bookmarked_articles else 'none' }}" stroke="currentColor" class="lucide lucide-bookmark"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+                                        </button>
+                                    </div>
+                                {% else %}
+                                    <div class="news-card-actions">
+                                        <button class="text-xs text-gray-400 cursor-not-allowed" disabled>Translate</button>
+                                        <button class="text-xs text-gray-400 cursor-not-allowed" disabled>AI Summary</button>
+                                        <button class="text-xs text-gray-400 cursor-not-allowed" disabled>Simplify</button>
+                                        <button class="text-xs text-gray-400 cursor-not-allowed" disabled>Audio</button>
+                                    </div>
+                                {% endif %}
+
                             </div>
                         {% endfor %}
                     {% else %}
@@ -990,40 +1006,56 @@
                                     </div>
                                 </div>
                             </a>
-                            <div class="news-card-actions" data-article-id="{{ article.id }}" data-original-summary="{{ article.summary }}">
-                                <button class="translate-button text-xs flex items-center gap-1 text-cyan-400 hover:scale-110 active:scale-90 transition-transform"
-                                            data-article-id="{{ article.id }}" data-original-text="{{ article.summary }}" data-target-language="{{ selected_language }}">
-                                    <span class="inline-block w-2 h-2 bg-cyan-400 rounded-full"></span>
-                                    <span>Translate</span>
-                                </button>
-                                <button class="original-summary-button text-xs flex items-center gap-1 text-blue-400 hover:scale-110 active:scale-90 transition-transform"
-                                            data-article-id="{{ article.id }}" data-original-text="{{ article.summary }}">
-                                        <!-- FileText Icon (Lucide-react FileText) -->
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M10 12H8"/><path d="M16 12h-2"/><path d="M16 16H8"/></svg>
+                            {% if article.summary %}
+                                <div class="news-card-actions" data-article-id="{{ article.id }}" data-original-summary="{{ article.summary }}">
+                                    <button class="translate-button text-xs flex items-center gap-1 text-cyan-400 hover:scale-110 active:scale-90 transition-transform"
+                                            data-article-id="{{ article.id }}"
+                                            data-original-text="{{ article.summary | e }}"
+                                            data-target-language="{{ selected_language }}">
+                                        <span class="inline-block w-2 h-2 bg-cyan-400 rounded-full"></span>
+                                        <span>Translate</span>
+                                    </button>
+
+                                    <button class="original-summary-button text-xs flex items-center gap-1 text-blue-400 hover:scale-110 active:scale-90 transition-transform"
+                                            data-article-id="{{ article.id }}"
+                                            data-original-text="{{ article.summary | e }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" class="lucide lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M10 12H8"/><path d="M16 12h-2"/><path d="M16 16H8"/></svg>
                                         <span>Original</span>
                                     </button>
-                                <button class="ai-summary-button text-xs flex items-center gap-1 text-yellow-400 hover:scale-110 active:scale-90 transition-transform"
-                                            data-article-id="{{ article.id }}" data-full-text="{{ article.summary }}">
-                                    <!-- AI Summary Icon (Lightbulb) -->
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lightbulb"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 14v8"/></svg>
-                                    <span>AI Summary</span>
-                                </button>
-                                <button class="simplify-button text-xs flex items-center gap-1 text-teal-400 hover:scale-110 active:scale-90 transition-transform"
-                                            data-article-id="{{ article.id }}" data-full-text="{{ article.summary }}">
-                                        <!-- Sparkle Icon (for Gemini feature) -->
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="1":6 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles"><path d="M9.9 10.8c.4 1.9 2 3.5 3.9 3.9"/><path d="M15 6l2-2 4 4"/><path d="M12.5 14.5 17 19l4-4"/><path d="M14 12l-4 4-2 2"/><path d="M2 12l4 4 2 2"/></svg>
+
+                                    <button class="ai-summary-button text-xs flex items-center gap-1 text-yellow-400 hover:scale-110 active:scale-90 transition-transform"
+                                            data-article-id="{{ article.id }}" data-full-text="{{ article.summary | e }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" class="lucide lucide-lightbulb"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 14v8"/></svg>
+                                        <span>AI Summary</span>
+                                    </button>
+
+                                    <button class="simplify-button text-xs flex items-center gap-1 text-teal-400 hover:scale-110 active:scale-90 transition-transform"
+                                            data-article-id="{{ article.id }}" data-full-text="{{ article.summary | e }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" class="lucide lucide-sparkles"><path d="M9.9 10.8c.4 1.9 2 3.5 3.9 3.9"/><path d="M15 6l2-2 4 4"/><path d="M12.5 14.5 17 19l4-4"/><path d="M14 12l-4 4-2 2"/><path d="M2 12l4 4 2 2"/></svg>
                                         <span>Simplify ✨</span>
-                                </button>
-                                <button class="audio-button text-xs flex items-center gap-1 text-white/60 hover:scale-110 active:scale-90 transition-transform"
-                                            data-article-id="{{ article.id }}" data-audio-text="{{ article.summary }}" data-lang-code="{{ selected_language }}">
-                                    <span>Audio</span>
-                                    <span class="inline-block w-2 h-2 bg-white/60 rounded-full"></span>
-                                </button>
-                                <button class="bookmark-button bookmark-button-bottom text-pink-500" data-article-id="{{ article.id }}" data-bookmarked="{{ 'true' if article.id in bookmarked_articles else 'false' }}">
-                                    <!-- Bookmark Icon -->
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="{{ 'currentColor' if article.id in bookmarked_articles else 'none' }}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bookmark"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
-                                </button>
-                            </div>
+                                    </button>
+
+                                    <button class="audio-button text-xs flex items-center gap-1 text-white/60 hover:scale-110 active:scale-90 transition-transform"
+                                            data-article-id="{{ article.id }}" data-audio-text="{{ article.summary | e }}" data-lang-code="{{ selected_language }}">
+                                        <span>Audio</span>
+                                        <span class="inline-block w-2 h-2 bg-white/60 rounded-full"></span>
+                                    </button>
+
+                                    <button class="bookmark-button bookmark-button-bottom text-pink-500"
+                                            data-article-id="{{ article.id }}"
+                                            data-bookmarked="{{ 'true' if article.id in bookmarked_articles else 'false' }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="{{ 'currentColor' if article.id in bookmarked_articles else 'none' }}" stroke="currentColor" class="lucide lucide-bookmark"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+                                    </button>
+                                </div>
+                            {% else %}
+                                <div class="news-card-actions">
+                                    <button class="text-xs text-gray-400 cursor-not-allowed" disabled>Translate</button>
+                                    <button class="text-xs text-gray-400 cursor-not-allowed" disabled>AI Summary</button>
+                                    <button class="text-xs text-gray-400 cursor-not-allowed" disabled>Simplify</button>
+                                    <button class="text-xs text-gray-400 cursor-not-allowed" disabled>Audio</button>
+                                </div>
+                            {% endif %}
+
                         </div>
                     {% endfor %}
                 {% else %}
@@ -1793,5 +1825,32 @@
 
         });
     </script>
+
+    <script>
+      function translateArticle(articleId, text, lang) {
+        fetch("/api/translate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            article_id: articleId,
+            text: text,
+            target_language: lang
+          }),
+        })
+        .then(response => response.json())
+        .then(data => {
+          if(data.success) {
+            alert("Translation: " + data.translated_text);
+            // You can update the DOM here instead
+          } else {
+            alert("Failed: " + data.error);
+          }
+        })
+        .catch(err => alert("Request failed"));
+      }
+    </script>
+
 </body>
 </html>
