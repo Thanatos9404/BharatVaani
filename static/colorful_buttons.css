@@ -1,0 +1,161 @@
+/* Colorful News Article Buttons */
+
+/* Button Container Alignment */
+.news-card .flex.gap-2.flex-wrap,
+.news-article .flex.gap-2.flex-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+/* Base Button Styling - Override previous fixes */
+.news-card button,
+.news-article button {
+    padding: 8px 16px !important;
+    border-radius: 12px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    border: 2px solid transparent !important;
+    backdrop-filter: blur(10px) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    cursor: pointer !important;
+}
+
+/* Translate Button - Cyan/Blue */
+.translate-button {
+    background: linear-gradient(135deg, #22d3ee, #0ea5e9) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 15px rgba(34, 211, 238, 0.4) !important;
+}
+
+.translate-button:hover {
+    background: linear-gradient(135deg, #06b6d4, #0284c7) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(34, 211, 238, 0.6) !important;
+}
+
+/* Original Button - Green */
+.original-summary-button {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4) !important;
+}
+
+.original-summary-button:hover {
+    background: linear-gradient(135deg, #059669, #047857) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6) !important;
+}
+
+/* AI Summary Button - Purple */
+.ai-summary-button {
+    background: linear-gradient(135deg, #a855f7, #9333ea) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4) !important;
+}
+
+.ai-summary-button:hover {
+    background: linear-gradient(135deg, #9333ea, #7e22ce) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(168, 85, 247, 0.6) !important;
+}
+
+/* Simplify Button - Orange */
+.simplify-button {
+    background: linear-gradient(135deg, #f97316, #ea580c) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4) !important;
+}
+
+.simplify-button:hover {
+    background: linear-gradient(135deg, #ea580c, #c2410c) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(249, 115, 22, 0.6) !important;
+}
+
+/* Audio Button - Pink */
+.audio-button {
+    background: linear-gradient(135deg, #ec4899, #db2777) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4) !important;
+}
+
+.audio-button:hover {
+    background: linear-gradient(135deg, #db2777, #be185d) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(236, 72, 153, 0.6) !important;
+}
+
+/* What-If Button - Yellow/Gold */
+.whatif-button {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
+    color: #000000 !important;
+    box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4) !important;
+    font-weight: 700 !important;
+}
+
+.whatif-button:hover {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(251, 191, 36, 0.6) !important;
+}
+
+/* Bookmark Button */
+.bookmark-button {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: rgba(236, 72, 153, 0.8) !important;
+    border: 2px solid rgba(236, 72, 153, 0.3) !important;
+}
+
+.bookmark-button:hover {
+    background: rgba(236, 72, 153, 0.2) !important;
+    color: #ec4899 !important;
+    border-color: #ec4899 !important;
+}
+
+.bookmark-button.bookmarked,
+.bookmark-button[data-bookmarked="true"] {
+    background: linear-gradient(135deg, #ec4899, #db2777) !important;
+    color: #ffffff !important;
+    border: 2px solid #ec4899 !important;
+}
+
+/* Button Icons */
+.news-card button svg,
+.news-article button svg {
+    width: 16px !important;
+    height: 16px !important;
+}
+
+/* Disabled State */
+.news-card button:disabled,
+.news-article button:disabled {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+}
+
+/* Loading Spinner in Button */
+.button-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+    .news-card button,
+    .news-article button {
+        padding: 6px 12px !important;
+        font-size: 12px !important;
+    }
+}

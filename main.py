@@ -76,8 +76,8 @@ try:
         APP_NAME, APP_VERSION, APP_DESCRIPTION, FUTURE_PLANS,
         NEWS_CATEGORIES, INDIAN_LANGUAGES, DEFAULT_NEWS_CATEGORY,
         DEFAULT_TARGET_LANGUAGE, DEFAULT_ARTICLE_LIMIT, RSS_FEEDS,
-        WHAT_IF_MODELS, WHAT_IF_MODEL_TRAITS, CATEGORY_KEYWORDS,
-        get_google_client_config, SUMMARIZER_MODEL_NAME
+        CATEGORY_KEYWORDS, get_google_client_config, SUMMARIZER_MODEL_NAME,
+        WHAT_IF_MODEL_OPTIONS
     )
 except ImportError as e:
     logging.critical(f"Failed to import from config.settings: {e}. Ensure config/settings.py is correct.")
@@ -97,6 +97,7 @@ except ImportError as e:
 
 try:
     from core.translator import translate_text
+    from core.fast_translator import fast_translate  # Fast Google Translate
 except ImportError as e:
     logging.critical(f"Failed to import from core.translator: {e}. Ensure core/translator.py is correct.")
     raise
@@ -112,6 +113,23 @@ try:
 except ImportError as e:
     logging.critical(f"Failed to import from core.utils: {e}. Ensure core/utils.py is correct.")
     raise
+
+try:
+    from core.recommender import get_recommender
+except ImportError as e:
+    logging.critical(f"Failed to import from core.recommender: {e}. Ensure core/recommender.py is correct.")
+    raise
+
+try:
+    from core.error_handler import (
+        handle_api_errors, validate_article_id, validate_language_code,
+        validate_text_length, sanitize_input, get_rate_limiter
+    )
+except ImportError as e:
+    logging.critical(f"Failed to import from core.error_handler: {e}. Ensure core/error_handler.py is correct.")
+    raise
+
+# AI service import removed - only used for What-If scenarios which have been removed
 
 # --- Global/Cached Instances ---
 # Removed OpenAI client, now directly using requests for Gemini API
@@ -178,10 +196,6 @@ def get_app_state():
             'selected_category': user_prefs_cache.get('selected_category', DEFAULT_NEWS_CATEGORY),
             'selected_language': user_prefs_cache.get('selected_language', DEFAULT_TARGET_LANGUAGE),
             'article_limit': user_prefs_cache.get('article_limit', DEFAULT_ARTICLE_LIMIT),
-            'selected_trait': list(WHAT_IF_MODEL_TRAITS.keys())[0],
-            'current_context': '',
-            'hypothetical_change': '',
-            'scenario_result': None,
             'selected_scope': user_prefs_cache.get('selected_scope', 'India News'),
             'sort_by': user_prefs_cache.get('sort_by', 'date_desc')  # New: Default sort by date descending
         }
@@ -476,8 +490,8 @@ def dashboard():
         read_articles_count=len(read_articles_for_template),
         bookmark_count=len(bookmarked_articles_for_template),
         top_entities=sorted(top_entities_map.items(), key=lambda x: x[1], reverse=True)[:10],
-        now=datetime.now(),  # Pass datetime.now() to the template
-        what_if_model_traits=WHAT_IF_MODEL_TRAITS  # Pass what_if_model_traits
+        now=datetime.now(),
+        what_if_model_options=WHAT_IF_MODEL_OPTIONS
     )
 
 
@@ -498,16 +512,25 @@ def api_summarize():
 
 
 @app.route('/api/translate', methods=['POST'])
+@handle_api_errors
 def api_translate():
     data = request.get_json()
-    text = data.get('text')
-    target_language = data.get('target_language')
-    article_id = data.get('article_id')
+    text = sanitize_input(data.get('text', ''))
+    target_language = data.get('target_language', '')
+    article_id = sanitize_input(data.get('article_id', ''))
 
-    if not text or not target_language or not article_id:
-        return jsonify({'success': False, 'error': 'Missing text, language, or article_id.'}), 400
+    # Removed min_length validation - IndicTrans2 handles tokenization internally
+    if not text or not text.strip():
+        return jsonify({'success': False, 'error': 'Text cannot be empty.'}), 400
+    
+    if not validate_language_code(target_language, INDIAN_LANGUAGES):
+        return jsonify({'success': False, 'error': 'Invalid language code.'}), 400
+    
+    if not validate_article_id(article_id):
+        return jsonify({'success': False, 'error': 'Invalid article ID.'}), 400
 
-    translated = translate_text(text, target_language)
+    # Use fast Google Translate instead of slow IndicTrans2
+    translated = fast_translate(text, target_language)
 
     # Store translated text in session for later audio playback
     session.setdefault("translated_texts", {})
@@ -583,15 +606,17 @@ def api_download_summary():
 
 
 @app.route('/api/toggle_bookmark', methods=['POST'])
+@handle_api_errors
 def api_toggle_bookmark():
     app_state = get_app_state()
     if not app_state['logged_in']:
         return jsonify({'success': False, 'error': 'Login required.'}), 401
 
     data = request.get_json()
-    article_id = data.get('article_id')
-    if not article_id:
-        return jsonify({'success': False, 'error': 'Invalid article ID.'}), 400
+    article_id = sanitize_input(data.get('article_id', ''))
+    
+    if not validate_article_id(article_id):
+        return jsonify({'success': False, 'error': 'Invalid article ID format.'}), 400
 
     # Load persistent preferences from disk
     from core.utils import load_user_preferences, save_user_preferences
@@ -725,8 +750,107 @@ def reading_list():
         read_articles_count=len(read_ids),
         bookmark_count=len(bookmarked_ids),
         top_entities=sorted(top_entities_map.items(), key=lambda x: x[1], reverse=True)[:10],
-        now=datetime.now(),  # Pass datetime.now() to the template
-        what_if_model_traits=WHAT_IF_MODEL_TRAITS  # Pass what_if_model_traits
+        now=datetime.now(),
+        what_if_model_options=WHAT_IF_MODEL_OPTIONS
+    )
+
+
+@app.route('/recommendations')
+def recommendations():
+    app_state = get_app_state()
+    if not app_state['logged_in']:
+        flash('Please log in to view recommendations.', 'error')
+        return redirect(url_for('root'))
+    
+    bookmarked_ids = set(user_prefs_cache.get('bookmarked_articles', []))
+    read_ids = set(user_prefs_cache.get('read_articles', []))
+    
+    # Load all cached articles
+    all_articles = load_cached_articles()
+    
+    # Get bookmarked articles
+    bookmarked_articles = [article for article in all_articles if article['id'] in bookmarked_ids]
+    
+    if not bookmarked_articles:
+        flash('Bookmark some articles first to get personalized recommendations!', 'info')
+        return redirect(url_for('dashboard'))
+    
+    # Get recommendations
+    recommender = get_recommender()
+    recommendations_list = recommender.recommend_articles(
+        all_articles=all_articles,
+        bookmarked_articles=bookmarked_articles,
+        bookmarked_ids=bookmarked_ids,
+        top_n=15
+    )
+    
+    # Extract articles with metadata
+    recommended_articles = []
+    for rec in recommendations_list:
+        article = rec['article'].copy()
+        article['recommendation_score'] = round(rec['score'] * 100)
+        article['recommendation_reason'] = rec['reason']
+        recommended_articles.append(article)
+    
+    # Compute stats for recommended articles
+    categories_count = {}
+    sentiments_count = {'Positive': 0, 'Neutral': 0, 'Negative': 0, 'Unknown': 0, 'Error': 0}
+    top_entities_map = {}
+    
+    for article in recommended_articles:
+        # Ensure 'published' is a datetime object
+        if 'published' in article and isinstance(article['published'], str):
+            try:
+                if 'T' in article['published'] and 'Z' in article['published']:
+                    article['published'] = datetime.strptime(article['published'], "%Y-%m-%dT%H:%M:%SZ")
+                elif re.match(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}", article['published']):
+                    article['published'] = datetime.strptime(article['published'], "%Y-%m-%d %H:%M")
+                else:
+                    try:
+                        article['published'] = datetime.fromisoformat(article['published'].replace('Z', '+00:00'))
+                    except ValueError:
+                        article['published'] = None
+            except ValueError:
+                logging.warning(f"Could not parse date string: {article['published']}")
+                article['published'] = None
+        
+        category = article.get('category', 'Uncategorized')
+        categories_count[category] = categories_count.get(category, 0) + 1
+        
+        sentiment = article.get('sentiment_data', analyze_sentiment(article.get('summary', '')))
+        label = sentiment.get('label', 'Unknown')
+        sentiments_count[label] = sentiments_count.get(label, 0) + 1
+        
+        entities = re.findall(r'\b[A-Z][a-z]+(?: [A-Z][a-z]+)*\b', article.get('summary', ''))
+        for ent in entities:
+            top_entities_map[ent] = top_entities_map.get(ent, 0) + 1
+    
+    return render_template(
+        'index.html',
+        user_name=session['user']['name'] if 'user' in session else 'Guest',
+        user_picture=session['user']['picture'] if 'user' in session else None,
+        backend_url=FLASK_APP_BASE_URL,
+        articles=recommended_articles,
+        bookmarked_articles=bookmarked_ids,
+        read_articles=read_ids,
+        page_title="Recommended for You",
+        active_tab="recommendations",
+        news_categories=NEWS_CATEGORIES,
+        indian_languages=INDIAN_LANGUAGES,
+        selected_category=app_state['selected_category'],
+        selected_language=app_state['selected_language'],
+        article_limit=app_state['article_limit'],
+        sort_by=app_state['sort_by'],
+        future_plans=FUTURE_PLANS,
+        RSS_FEEDS=RSS_FEEDS,
+        categories_count=categories_count,
+        sentiments_count=sentiments_count,
+        total_articles=len(recommended_articles),
+        read_articles_count=len(read_ids),
+        bookmark_count=len(bookmarked_ids),
+        top_entities=sorted(top_entities_map.items(), key=lambda x: x[1], reverse=True)[:10],
+        now=datetime.now(),
+        what_if_model_options=WHAT_IF_MODEL_OPTIONS
     )
 
 
@@ -788,46 +912,45 @@ def analytics():
         future_plans=FUTURE_PLANS,
         RSS_FEEDS=RSS_FEEDS,
         now=datetime.now(),  # Pass datetime.now() to the template
-        what_if_model_traits=WHAT_IF_MODEL_TRAITS  # Pass what_if_model_traits
+        what_if_model_options=WHAT_IF_MODEL_OPTIONS
     )
 
 
-@app.route('/settings')
-def settings():
+@app.route('/profile')
+def profile():
     app_state = get_app_state()
     if not app_state['logged_in']:
         flash('Login required.', 'error')
         return redirect(url_for('root'))
 
-    # These are initialized to empty/zero as they are not calculated on the settings page
+    # Initialize analytics variables
     categories_count = {}
-    sentiments_count = {'Positive': 0, 'Neutral': 0, 'Negative': 0, 'Unknown': 0,
-                        'Error': 0}  # Added 'Unknown' and 'Error'
+    sentiments_count = {'Positive': 0, 'Neutral': 0, 'Negative': 0, 'Unknown': 0, 'Error': 0}
     top_entities_map = {}
 
     return render_template(
-        'index.html',  # Render index.html for settings tab
+        'index.html',
         user_name=session['user']['name'] if 'user' in session else 'Guest',
-        user_picture=session['user']['picture'] if 'user' in session else None,  # New: Pass user_picture to template
+        user_picture=session['user']['picture'] if 'user' in session else None,
         backend_url=FLASK_APP_BASE_URL,
-        page_title="Settings",
-        active_tab="settings",
+        page_title="My Profile",
+        active_tab="profile",
         news_categories=NEWS_CATEGORIES,
         indian_languages=INDIAN_LANGUAGES,
         selected_category=app_state['selected_category'],
         selected_language=app_state['selected_language'],
         article_limit=app_state['article_limit'],
-        sort_by=app_state['sort_by'],  # Pass sort_by to template
+        sort_by=app_state['sort_by'],
         future_plans=FUTURE_PLANS,
         RSS_FEEDS=RSS_FEEDS,
         categories_count=categories_count,
         sentiments_count=sentiments_count,
-        total_articles=0,  # Default to 0 for settings page
+        total_articles=0,
         read_articles_count=len(user_prefs_cache.get('read_articles', [])),
         bookmark_count=len(user_prefs_cache.get('bookmarked_articles', [])),
-        top_entities=[],  # Default to empty list for settings page
-        now=datetime.now(),  # Pass datetime.now() to the template
-        what_if_model_traits=WHAT_IF_MODEL_TRAITS  # Pass what_if_model_traits
+        top_entities=[],
+        now=datetime.now(),
+        what_if_model_options=WHAT_IF_MODEL_OPTIONS
     )
 
 
@@ -837,7 +960,7 @@ def clear_reading_progress():
     save_preferences(user_prefs_cache)
     session.modified = True
     flash('Reading progress cleared!', 'success')
-    return redirect(url_for('settings'))
+    return redirect(url_for('profile'))
 
 
 @app.route('/clear_bookmarks', methods=['POST'])
@@ -846,167 +969,104 @@ def clear_bookmarks():
     save_preferences(user_prefs_cache)
     session.modified = True
     flash('Bookmarks cleared!', 'success')
-    return redirect(url_for('settings'))
+    return redirect(url_for('profile'))
 
 
-@app.route('/what_if_scenarios', methods=['GET', 'POST'])
-def what_if_scenarios():
+@app.route('/whatif')
+def whatif():
     app_state = get_app_state()
     if not app_state['logged_in']:
-        flash('Login required.', 'error')
+        flash('Login required to access What-If Scenarios.', 'error')
         return redirect(url_for('root'))
-
-    # If this is a POST request, it's likely for updating the selected trait
-    if request.method == 'POST':
-        selected_trait = request.form.get('selected_model_trait', list(WHAT_IF_MODEL_TRAITS.keys())[0])
-        app_state['selected_trait'] = selected_trait
-        session.modified = True
-        flash('AI Model trait updated.', 'info')
-        # Redirect back to GET to clear form submission and display updated trait
-        return redirect(url_for('what_if_scenarios'))
-
-    # For GET requests or after a POST redirect
-    # Initialize analytics variables with default values for what_if_scenarios view
+    
+    from config.settings import WHAT_IF_MODEL_OPTIONS
+    
+    # Initialize analytics variables for consistency
     categories_count = {}
     sentiments_count = {'Positive': 0, 'Neutral': 0, 'Negative': 0, 'Unknown': 0, 'Error': 0}
-    total_articles_analytics = 0
-    read_articles_count_analytics = len(get_reading_progress())
-    bookmark_count_analytics = len(user_prefs_cache.get('bookmarked_articles', []))
-    top_entities = {}
-
+    top_entities_map = {}
+    
     return render_template(
-        'index.html',  # Render index.html for what-if tab
+        'index.html',
         user_name=session['user']['name'] if 'user' in session else 'Guest',
-        user_picture=session['user']['picture'] if 'user' in session else None,  # New: Pass user_picture to template
+        user_picture=session['user']['picture'] if 'user' in session else None,
         backend_url=FLASK_APP_BASE_URL,
-        what_if_model_traits=WHAT_IF_MODEL_TRAITS,
-        selected_trait=app_state.get('selected_trait'),
-        current_context=app_state.get('current_context', ''),
-        hypothetical_change=app_state.get('hypothetical_change', ''),
-        scenario_result=app_state.get('scenario_result', None),
-        active_tab="what_if_scenarios",
-        # Pass necessary analytics variables, even if empty, to prevent template errors
-        categories_count=categories_count,
-        sentiments_count=sentiments_count,
-        total_articles=total_articles_analytics,
-        read_articles_count=read_articles_count_analytics,
-        bookmark_count=bookmark_count_analytics,
-        top_entities=top_entities,
-        sort_by=app_state['sort_by'],  # Pass sort_by to template
-        now=datetime.now(),  # Pass datetime.now() to the template
-        # ADDED: Pass all filter-related variables to the template
+        page_title="What-If Scenarios",
+        active_tab="whatif",
         news_categories=NEWS_CATEGORIES,
         indian_languages=INDIAN_LANGUAGES,
         selected_category=app_state['selected_category'],
         selected_language=app_state['selected_language'],
         article_limit=app_state['article_limit'],
+        sort_by=app_state['sort_by'],
+        future_plans=FUTURE_PLANS,
         RSS_FEEDS=RSS_FEEDS,
-        selected_scope=app_state['selected_scope']
+        categories_count=categories_count,
+        sentiments_count=sentiments_count,
+        total_articles=0,
+        read_articles_count=len(user_prefs_cache.get('read_articles', [])),
+        bookmark_count=len(user_prefs_cache.get('bookmarked_articles', [])),
+        top_entities=[],
+        now=datetime.now(),
+        what_if_model_options=WHAT_IF_MODEL_OPTIONS
     )
 
 
-@app.route('/generate_what_if', methods=['POST'])
-def generate_what_if():
+@app.route('/api/whatif', methods=['POST'])
+@handle_api_errors
+def api_whatif():
+    """API endpoint for What-If scenario generation"""
     app_state = get_app_state()
-    context = request.form['current_context']
-    change = request.form['hypothetical_change']
-    trait = request.form.get('selected_model_trait', list(WHAT_IF_MODEL_TRAITS.keys())[0])  # Get trait from form
-
-    app_state.update({
-        'current_context': context,
-        'hypothetical_change': change,
-        'selected_trait': trait  # Store the trait name, not the model ID
-    })
-    session.modified = True
-
-    if not context or not change:
-        flash('Both "Current Situation / Context" and "Hypothetical Change / Scenario" are required!', 'error')
-        return redirect(url_for('what_if_scenarios'))
-
-    def _generate_what_if_scenario_llm(current_context: str, hypothetical_change: str, selected_trait: str) -> Dict:
-        if not GEMINI_API_KEY:
-            return {"error": "Gemini API Key is not configured. Please set GEMINI_API_KEY in your .env file."}
-
-        # Select model based on trait (though for Gemini Flash, it's consistent)
-        # We can adjust prompt slightly based on trait if needed, but for now, base prompt is sufficient.
-        # model_name = WHAT_IF_MODEL_TRAITS.get(selected_trait, "gemini-2.0-flash") # Fallback to default
-        model_name = "gemini-2.0-flash"  # Sticking to gemini-2.0-flash as per previous instruction
-
-        prompt = f"""
-        You are an expert geopolitical and economic analyst. Your task is to generate plausible future news headlines and a concise news article summarizing a hypothetical scenario.
-        The analysis should be {selected_trait.lower()}.
-
-        Current Situation/Context:
-        "{current_context}"
-
-        Hypothetical Change/Event:
-        "{hypothetical_change}"
-
-        Based on the above, generate ONE plausible future news HEADLINE and ONE NEWS ARTICLE (approximately 3-5 sentences) that describes the immediate implications of this hypothetical change.
-        Ensure the article is detailed and explains everything properly from the context to the possibilities.
-
-        Format your response strictly as follows:
-        HEADLINE: [Generated Headline]
-        ARTICLE: [Generated News Article]
-        """
-
-        # Gemini API call
-        api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={GEMINI_API_KEY}"
-        headers = {'Content-Type': 'application/json'}
-        payload = {
-            "contents": [
-                {
-                    "role": "user",
-                    "parts": [
-                        {"text": prompt}
-                    ]
-                }
-            ],
-            "generationConfig": {
-                "maxOutputTokens": 400,  # Increased max output tokens for more detailed article
-                "temperature": 0.7,
-            }
-        }
-
-        try:
-            response = requests.post(api_url, headers=headers, json=payload)
-            response.raise_for_status()  # Raise an exception for HTTP errors (4xx or 5xx)
-            result = response.json()
-
-            if result.get('candidates') and result['candidates'][0].get('content') and result['candidates'][0][
-                'content'].get('parts'):
-                generated_text = result['candidates'][0]['content']['parts'][0]['text'].strip()
-
-                headline_match = re.search(r"HEADLINE:\s*(.*)", generated_text, re.IGNORECASE)
-                article_match = re.search(r"ARTICLE:\s*(.*)", generated_text, re.IGNORECASE | re.DOTALL)
-
-                headline = headline_match.group(1).strip() if headline_match else "Could not extract headline."
-                article_content = article_match.group(
-                    1).strip() if article_match else "Could not extract article content."
-
-                return {"headline": headline, "article": article_content}
-            else:
-                logging.error(f"Gemini API response did not contain expected content: {result}")
-                return {"error": "Failed to generate scenario. Unexpected API response structure. Please try again."}
-
-        except requests.exceptions.RequestException as e:
-            logging.error(f"Error calling Gemini API for What-If scenario: {e}")
-            return {
-                "error": f"Failed to connect to AI model: {e}. Please check your GEMINI_API_KEY and network connection."}
-        except Exception as e:
-            logging.error(f"An unexpected error occurred during Gemini API call: {e}")
-            return {"error": f"An unexpected error occurred: {e}. Check server logs."}
-
-    scenario_result_data = _generate_what_if_scenario_llm(context, change, trait)
-
-    app_state['scenario_result'] = scenario_result_data
-    session.modified = True
-
-    if scenario_result_data.get("error"):
-        flash(scenario_result_data['error'], 'error')
-    else:
-        flash('Scenario generated successfully!', 'success')
-    return redirect(url_for('what_if_scenarios'))
+    if not app_state['logged_in']:
+        return jsonify({'success': False, 'error': 'Login required.'}), 401
+    
+    try:
+        from core.ai_service import get_ai_service
+        from config.settings import WHAT_IF_MODEL_OPTIONS
+        
+        data = request.get_json()
+        context = sanitize_input(data.get('context', ''))
+        hypothetical_change = sanitize_input(data.get('hypothetical_change', ''))
+        model_option = data.get('model_option', 'Balanced & Neutral')
+        
+        # Validate inputs
+        if not context or len(context.strip()) < 10:
+            return jsonify({'success': False, 'error': 'Current situation must be at least 10 characters.'}), 400
+        
+        if not hypothetical_change or len(hypothetical_change.strip()) < 10:
+            return jsonify({'success': False, 'error': 'Hypothetical change must be at least 10 characters.'}), 400
+        
+        if len(context) > 2000:
+            return jsonify({'success': False, 'error': 'Current situation must be less than 2000 characters.'}), 400
+        
+        if len(hypothetical_change) > 1000:
+            return jsonify({'success': False, 'error': 'Hypothetical change must be less than 1000 characters.'}), 400
+        
+        # Get model configuration
+        model_config = WHAT_IF_MODEL_OPTIONS.get(model_option, WHAT_IF_MODEL_OPTIONS['Balanced & Neutral'])
+        
+        # Generate scenario
+        ai_service = get_ai_service()
+        result = ai_service.generate_whatif_scenario(
+            context=context,
+            hypothetical_change=hypothetical_change,
+            model_option=model_option,
+            model_config=model_config
+        )
+        
+        if result.get('error'):
+            return jsonify({'success': False, 'error': result['error']}), 500
+        
+        return jsonify({
+            'success': True,
+            'headline': result.get('headline', 'Scenario Generated'),
+            'article': result.get('article', 'Unable to generate scenario.'),
+            'model_used': model_option
+        })
+        
+    except Exception as e:
+        logging.error(f"What-If API error: {e}", exc_info=True)
+        return jsonify({'success': False, 'error': f'Failed to generate scenario: {str(e)}'}), 500
 
 
 @app.route('/api/simplify_text', methods=['POST'])

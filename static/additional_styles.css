@@ -1,0 +1,209 @@
+/* Additional Glassmorphic Styles */
+
+/* Profile Page Styling */
+#Profile .card,
+.profile-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Profile Stats */
+.profile-stats {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.profile-stat-item {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    flex: 1;
+    min-width: 150px;
+}
+
+/* Button Spinner for Loading States */
+.button-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top: 3px solid #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.2);
+    border-top: 4px solid var(--accent-cyan);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+/* Toast Container */
+#custom-toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.custom-toast {
+    padding: 16px 24px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    color: var(--text-light);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    animation: slideIn 0.3s ease-out;
+    min-width: 250px;
+}
+
+.custom-toast.success {
+    border-left: 4px solid var(--accent-green);
+}
+
+.custom-toast.error {
+    border-left: 4px solid var(--accent-pink);
+}
+
+.custom-toast.info {
+    border-left: 4px solid var(--accent-cyan);
+}
+
+.custom-toast.hide {
+    animation: slideOut 0.3s ease-in;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+}
+
+/* Modal Styling */
+#aiSummaryModal {
+    z-index: 1001;
+}
+
+#aiSummaryModal .bg-gradient-to-br {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Better Text Visibility */
+.text-white {
+    color: #ffffff !important;
+}
+
+.text-white\/70 {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.text-white\/60 {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* News Card Title */
+.news-card-title {
+    color: var(--text-light);
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 1.5;
+}
+
+/* Language Selector */
+#language-select,
+.form-select {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    color: var(--text-light);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#language-select option {
+    background: #1a1a3e;
+    color: var(--text-light);
+}
+
+/* Tabs Container */
+.tabs-container {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.tab-button {
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.tab-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Active Tab Highlighting */
+.bg-gradient-to-r {
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+}
+
+/* Flash Messages */
+.flash-messages-container {
+    margin-bottom: 24px;
+}
+
+.alert {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 16px 20px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+}
+
+.alert-success {
+    border-left: 4px solid var(--accent-green);
+}
+
+.alert-error {
+    border-left: 4px solid var(--accent-pink);
+}
+
+.alert-info {
+    border-left: 4px solid var(--accent-cyan);
+}

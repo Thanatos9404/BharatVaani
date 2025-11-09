@@ -1,0 +1,98 @@
+/* Override ALL button backgrounds to glassmorphic */
+
+/* Force all buttons to use glassmorphic styling */
+button,
+.btn,
+.action-btn,
+.audio-button,
+.bookmark-button,
+.translate-button,
+.simplify-button,
+.tab-button,
+input[type="button"],
+input[type="submit"] {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+}
+
+button:hover,
+.btn:hover,
+.action-btn:hover,
+.audio-button:hover,
+.translate-button:hover,
+.simplify-button:hover,
+.tab-button:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(34, 211, 238, 0.5) !important;
+}
+
+/* Primary buttons */
+.btn-primary,
+button[type="submit"] {
+    background: linear-gradient(135deg, #a855f7, #22d3ee) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.4) !important;
+}
+
+.btn-primary:hover,
+button[type="submit"]:hover {
+    background: linear-gradient(135deg, #22d3ee, #a855f7) !important;
+    box-shadow: 0 6px 30px rgba(168, 85, 247, 0.6) !important;
+}
+
+/* Active tab */
+.tab-button.active,
+.bg-gradient-to-r {
+    background: linear-gradient(135deg, #22d3ee, #a855f7) !important;
+}
+
+/* Remove white/gray backgrounds */
+.bg-white,
+.bg-white\/5,
+.bg-white\/10,
+.bg-gray-700,
+.bg-gray-800 {
+    background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Fix search input */
+#search-input {
+    background: rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+}
+
+#search-input::placeholder {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Fix profile buttons */
+#Profile button,
+#Profile .btn {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+}
+
+/* Fix header buttons */
+header button,
+header .btn {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+}
+
+/* Bookmark button active state */
+.bookmark-button.bookmarked,
+.bookmark-button[data-bookmarked="true"] {
+    background: linear-gradient(135deg, #ec4899, #f97316) !important;
+}
+
+/* No image placeholder */
+.no-image-placeholder,
+div[class*="bg-gray-7"] {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: rgba(255, 255, 255, 0.5) !important;
+}

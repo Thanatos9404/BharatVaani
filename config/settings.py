@@ -230,7 +230,42 @@ WHAT_IF_MODELS = [
     "gryphe/mythomist-7b:free",
 ]
 
-# Model traits mapping with working models for "What If Scenarios"
+# AI Model Options with user-friendly descriptions
+# Using Hugging Face Inference API models
+WHAT_IF_MODEL_OPTIONS = {
+    "Detailed & Comprehensive": {
+        "model": "meta-llama/Meta-Llama-3-8B-Instruct",
+        "description": "Deep analysis with thorough explanations",
+        "max_tokens": 600,
+        "temperature": 0.7
+    },
+    "Crisp & Concise": {
+        "model": "mistralai/Mistral-7B-Instruct-v0.2",
+        "description": "Quick, to-the-point summaries",
+        "max_tokens": 300,
+        "temperature": 0.5
+    },
+    "Creative & Imaginative": {
+        "model": "microsoft/Phi-3-mini-4k-instruct",
+        "description": "Innovative scenarios with creative angles",
+        "max_tokens": 500,
+        "temperature": 0.9
+    },
+    "Balanced & Neutral": {
+        "model": "google/gemma-2b-it",
+        "description": "Objective analysis without bias",
+        "max_tokens": 400,
+        "temperature": 0.6
+    },
+    "Technical & Data-Driven": {
+        "model": "tiiuae/falcon-7b-instruct",
+        "description": "Fact-based with technical details",
+        "max_tokens": 450,
+        "temperature": 0.4
+    }
+}
+
+# Legacy support - keep for backward compatibility
 WHAT_IF_MODEL_TRAITS = {
     "Balanced & Insightful": "meta-llama/llama-3.1-8b-instruct:free",
     "Creative & Dramatic": "gryphe/mythomist-7b:free",

@@ -5,6 +5,8 @@ deep-translator
 feedparser
 gTTS
 google-auth-oauthlib
+googletrans==4.0.0rc1
+gunicorn
 newsapi-python
 nltk
 python-dotenv

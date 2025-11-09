@@ -1,0 +1,45 @@
+# Environment Variables
+.env
+.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# Data Files
+data/
+*.json
+!requirements.txt
+!vercel.json
+!render.yaml
+!package.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Static Files
+static/audio/
+*.mp3
+*.wav
+
+# Model Cache
+.cache/
+models/

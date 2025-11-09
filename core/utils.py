@@ -17,7 +17,7 @@ except LookupError:
 except Exception as e:
     print(f"NLTK download check failed: {e}")
 
-PREFS_FILE = os.path.join(os.getcwd(), "BharatVaani", "data", "user_preferences.json")
+PREFS_FILE = os.path.join(os.getcwd(), "data", "user_preferences.json")
 
 
 def load_user_preferences():
@@ -81,7 +81,7 @@ def analyze_sentiment(text: str) -> dict:
         return {"label": "Error", "score": 0, "emoji": "⚠️", "color": "#ffc107"} # Yellow for error
 
 
-CACHE_FILE = os.path.join(os.getcwd(), "BharatVaani", "data", "latest_articles.json")
+CACHE_FILE = os.path.join(os.getcwd(), "data", "latest_articles.json")
 
 def save_cached_articles(articles):
     os.makedirs(os.path.dirname(CACHE_FILE), exist_ok=True)

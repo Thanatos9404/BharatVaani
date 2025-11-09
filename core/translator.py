@@ -88,6 +88,10 @@ def translate_text(text: str, target_lang_code: str) -> str:
         generated_tokens = model_local.generate(
             **inputs,
             max_length=512,
+            num_beams=5,
+            num_return_sequences=1,
+            use_cache=False,  # Fix for NoneType error
+            do_sample=False,
         )
 
         translation = tokenizer_local.batch_decode(
