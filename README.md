@@ -12,6 +12,12 @@ In India, particularly in Tier 2 and Tier 3 regions, access to timely and releva
 
 ---
 
+## Demo
+
+> https://youtu.be/wvOa9x7HVoI
+
+---
+
 ## ✨ Features Designed for Impact
 
 - ### **📰 AI-Powered News Fetching**
@@ -88,10 +94,6 @@ In India, particularly in Tier 2 and Tier 3 regions, access to timely and releva
 
 ---
 
-> **Note:** Not all frontend frameworks (like Framer Motion or Lucide-react) are in the Flask-only version of the app. They’re included here because they appeared in your experiments and may be integrated in the future.
-
----
-
 ## 🚀 Setup and Installation (Local Development)
 
 ### Prerequisites
@@ -108,8 +110,8 @@ In India, particularly in Tier 2 and Tier 3 regions, access to timely and releva
 
 ```bash
 
-git clone https://github.com/Thanatos9404/AI-News-Summarizer.git
-cd AI-News-Summarizer
+git clone https://github.com/Thanatos9404/BharatVaani.git
+cd BharatVaani
 ```
 
 #### 2. Create and activate a virtual environment

@@ -102,15 +102,12 @@ def get_image_thumbnail(image_url, size=(150, 100)):
 def fetch_top_headlines(category: str = "general", country: str = "in", page_size: int = 20,
                         selected_scope: str = "India News") -> List[Dict]:
     """
-    Fetches news from RSS feeds based on the selected scope.
-    The 'category' and 'country' parameters are now primarily for filtering after fetching.
+    Fetches news from RSS feeds based on selected scope. Ensures articles have valid summary/content.
     """
     news = []
     seen_ids = set()
     session = create_session()
-
-    # Get feeds for the selected scope
-    feeds_to_fetch = RSS_FEEDS.get(selected_scope, RSS_FEEDS["India News"])  # Default to India News
+    feeds_to_fetch = RSS_FEEDS.get(selected_scope, RSS_FEEDS["India News"])  # fallback to default if missing
 
     logging.info(f"Attempting to fetch news from RSS feeds for scope: {selected_scope}")
 
@@ -118,71 +115,72 @@ def fetch_top_headlines(category: str = "general", country: str = "in", page_siz
         try:
             logging.info(f"Fetching from RSS feed: {url}")
             response = session.get(url, timeout=15)
-            response.raise_for_status()  # Raise an HTTPError for bad responses (4xx or 5xx)
+            response.raise_for_status()
             parsed = feedparser.parse(response.content)
 
-            # Extract base URL for relative image paths
-            parsed_url = urlparse(url)
-            base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+            base_url = f"{urlparse(url).scheme}://{urlparse(url).netloc}"
 
             for entry in parsed.entries:
-                if len(news) >= page_size:  # Stop if we have enough articles
+                if len(news) >= page_size:
                     break
 
                 title = clean_text(getattr(entry, 'title', '')).strip()
                 summary = clean_text(getattr(entry, 'summary', '')).strip()
-                link = getattr(entry, 'link', '')
+                content = ''
+                if hasattr(entry, 'content') and entry.content and isinstance(entry.content, list):
+                    content = clean_text(entry.content[0].get('value', '')).strip()
+
+                link = getattr(entry, 'link', '').strip()
 
                 if not title or not link or len(title) < 10:
                     continue
 
-                # Generate a consistent ID for deduplication
-                temp_identifier_for_dedup = getattr(entry, 'id', getattr(entry, 'guid', None))
-                if not temp_identifier_for_dedup:
-                    temp_identifier_for_dedup = link if link else (title + getattr(entry, 'published', ''))
-
-                # Normalize URL for consistent hashing, especially for links
-                if temp_identifier_for_dedup:
-                    temp_identifier_for_dedup = get_hash_key(temp_identifier_for_dedup)  # Use get_hash_key from utils
-
-                if not temp_identifier_for_dedup or temp_identifier_for_dedup in seen_ids:
+                # Skip articles missing both content and summary
+                if not summary and not content:
+                    logging.debug(f"Skipping article with title '{title}' due to missing content and summary.")
                     continue
 
-                seen_ids.add(temp_identifier_for_dedup)
+                # Use summary or content (whichever is available)
+                main_text = summary if summary else content
 
-                published_at_str = getattr(entry, 'published_parsed', None)
+                dedup_id = getattr(entry, 'id', getattr(entry, 'guid', None)) or link or (title + getattr(entry, 'published', ''))
+                dedup_id = get_hash_key(dedup_id)
+
+                if dedup_id in seen_ids:
+                    continue
+                seen_ids.add(dedup_id)
+
                 published_date = "Unknown"
-                if published_at_str:
-                    try:
-                        pub_datetime = datetime(*published_at_str[:6])
-                        # Filter out old articles (e.g., older than 7 days)
-                        if datetime.now() - pub_datetime > timedelta(days=7):
+                try:
+                    if hasattr(entry, 'published_parsed') and entry.published_parsed:
+                        pub_dt = datetime(*entry.published_parsed[:6])
+                        if datetime.now() - pub_dt > timedelta(days=7):
                             continue
-                        published_date = pub_datetime.strftime("%Y-%m-%d %H:%M")
-                    except ValueError:
-                        pass
+                        published_date = pub_dt.strftime("%Y-%m-%d %H:%M")
+                except Exception:
+                    pass
 
-                full_text_for_ai = f"{title}. {summary}" if summary else title
+                full_text_for_ai = f"{title}. {main_text}"
 
                 article_data = {
-                    'id': temp_identifier_for_dedup,  # Use the consistent ID
+                    'id': dedup_id,
                     'title': title,
                     'summary': summary,
-                    'content': clean_text(getattr(entry, 'content', [{'value': ''}])[0].get('value', '')) if hasattr(
-                        entry, 'content') else summary,
+                    'content': content,
                     'url': link,
                     'published': published_date,
                     'source': getattr(entry, 'source', {}).get('title', urlparse(url).netloc.replace('www.', '')),
                     'image_url': extract_image_from_rss(entry, base_url),
-                    'sentiment_data': analyze_sentiment(full_text_for_ai),  # Use sentiment_data for consistency
+                    'sentiment_data': analyze_sentiment(full_text_for_ai),
                     'full_text_for_ai': full_text_for_ai
                 }
+
                 news.append(article_data)
 
         except requests.exceptions.RequestException as e:
             logging.error(f"Network error fetching from RSS feed {url}: {e}")
         except Exception as e:
-            logging.error(f"An unexpected error occurred during RSS news fetching from {url}: {e}", exc_info=True)
+            logging.error(f"Unexpected error during fetch from {url}: {e}", exc_info=True)
 
     logging.info(f"Finished fetching RSS news. Total articles collected: {len(news)}")
     return news

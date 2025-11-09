@@ -25,13 +25,16 @@ def load_summarizer_pipeline():
 def summarize_text(text: str) -> str:
     """
     Summarizes the given text into 2-3 bullet points using the loaded Hugging Face model.
+    Handles empty or malformed inputs gracefully.
     """
     if summarizer_pipeline is None:
-        return "AI summarization service is not available (model failed to load)."
+        logging.error("Summarizer pipeline not loaded.")
+        return "Summary not available (AI model failed to load)."
 
     cleaned_text = clean_text(text)
-    if not cleaned_text.strip():
-        return "No content to summarize."
+    if not cleaned_text.strip() or len(cleaned_text.strip()) < 30:
+        logging.warning(f"Text too short to summarize: {cleaned_text[:50]}...")
+        return "Summary not available for this article."
 
     max_input_length = summarizer_pipeline.tokenizer.model_max_length if hasattr(summarizer_pipeline.tokenizer, 'model_max_length') else 1024
     if len(cleaned_text.split()) > max_input_length:
@@ -45,14 +48,16 @@ def summarize_text(text: str) -> str:
             do_sample=False,
             truncation=True
         )
-        summary = summary_result[0]['summary_text']
+        summary = summary_result[0].get('summary_text', '')
+        if not summary.strip():
+            raise ValueError("Empty summary returned from model.")
 
         sentences = summary.split('.')
         bullet_points = [f"• {s.strip()}" for s in sentences if s.strip()]
-        return "\n".join(bullet_points[:3])
+        return "\n".join(bullet_points[:3]) if bullet_points else "Summary not available."
     except Exception as e:
         logging.error(f"Error during summarization: {e}")
-        return f"Summary generation failed: {e}. Please try again later."
+        return "Summary generation failed. Please try again later."
 
 # Call load_summarizer_pipeline once when the module is imported
 load_summarizer_pipeline()

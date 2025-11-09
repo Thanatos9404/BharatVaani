@@ -12,6 +12,8 @@ import requests  # Import requests for Gemini API calls
 
 from core.utils import load_cached_articles, save_cached_articles
 from core.utils import generate_unique_id
+from core.translator import translate_text
+
 
 from gtts import gTTS
 import base64
