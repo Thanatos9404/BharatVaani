@@ -148,10 +148,10 @@ FLASK_SECRET_KEY="your_secret_key_here"
 FLASK_APP_BASE_URL="http://localhost:5000"
 
 # Google Gemini API (Required for What-If)
-GEMINI_API_KEY="AIzaSyABC123DEF456GHI789JKL012MNO345PQR"
+GEMINI_API_KEY="your_gemini_api_key_here"
 
 # Optional: Hugging Face (fallback)
-HUGGINGFACE_API_KEY="hf_1234567890abcdef"
+HUGGINGFACE_API_KEY="your_huggingface_api_key_here"
 ```
 
 ### Step 3: Install Dependencies & Run
