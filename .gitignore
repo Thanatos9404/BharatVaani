@@ -43,3 +43,11 @@ static/audio/
 # Model Cache
 .cache/
 models/
+
+# Documentation & Setup Files (Keep README.md)
+ALL_FIXES_APPLIED.md
+FINAL_FIXES_COMPLETE.md
+UI_FIXES_COMPLETE.md
+QUICK_START.txt
+START_HERE.txt
+TEST_THIS_NOW.txt
